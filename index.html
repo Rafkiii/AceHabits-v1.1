@@ -36,22 +36,23 @@
   
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
+  /* PERFORMANCE FIX: Removed fixed background attachment to kill scroll lag */
   body { 
     font-family: var(--font-sans); 
-    background-color: var(--bg-base); 
+    background: radial-gradient(circle at top left, #0b1426, var(--bg-base));
     color: var(--text-primary); 
     height: 100vh;
-    overflow: hidden; /* Prevent body scroll, layout handles scrolling */
+    overflow: hidden; 
   }
   
-  /* Glassmorphism Panel Class */
+  /* PERFORMANCE FIX: Reduced blur slightly to save GPU rendering power */
   .glass-panel {
     background: var(--surface-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 
   /* --- LAYOUT: SIDEBAR & MAIN CONTENT --- */
@@ -176,6 +177,9 @@
   .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
   @media (max-width: 800px) { .chart-grid { grid-template-columns: 1fr; } .home-grid { grid-template-columns: 1fr; } }
   .chart-container { background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; }
+
+  /* GRAPH STRETCH FIX: Wrapping container to lock the height */
+  .chart-wrapper { position: relative; height: 220px; width: 100%; }
 
   /* --- GENERAL COMPONENTS --- */
   .card { padding: 1.25rem 1.5rem; margin-bottom: 16px; }
@@ -352,8 +356,8 @@
         <button class="nav-btn" id="nav-chat" onclick="sw('chat')"><i class="ti ti-message"></i> Ask Claude</button>
       </nav>
       
-      <div style="padding: 20px; border-top: 1px solid var(--border-strong);">
-        <button class="nav-btn" onclick="logout()" style="color: var(--text-muted);"><i class="ti ti-logout"></i> Sign Out</button>
+      <div style="padding: 20px; border-top: 1px solid var(--border-strong); display: flex; flex-direction: column; gap: 8px;">
+        <button class="nav-btn" id="nav-settings" onclick="sw('settings')"><i class="ti ti-settings"></i> Settings</button>
       </div>
     </aside>
 
@@ -401,11 +405,15 @@
             <div class="chart-grid">
               <div class="chart-container">
                 <h3 style="font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--text-secondary);">7-Day Habit Performance</h3>
-                <canvas id="habitChart" height="200"></canvas>
+                <div class="chart-wrapper">
+                  <canvas id="habitChart"></canvas>
+                </div>
               </div>
               <div class="chart-container">
                 <h3 style="font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--text-secondary);">Today's Tasks</h3>
-                <canvas id="taskChart" height="200"></canvas>
+                <div class="chart-wrapper">
+                  <canvas id="taskChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -538,6 +546,22 @@
             </div>
           </div>
 
+          <div class="section" id="s-settings">
+            <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Settings</h2>
+            
+            <div class="card glass-panel">
+              <h3 style="font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">Account Information</h3>
+              <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">Logged in as: <strong id="setting-user-email" style="color:var(--text-primary); margin-left: 5px;">...</strong></p>
+              <button class="sm-btn" onclick="logout()" style="padding: 10px 16px;"><i class="ti ti-logout" style="margin-right: 6px;"></i> Sign Out</button>
+            </div>
+            
+            <div class="card glass-panel" style="border-color: rgba(255, 123, 114, 0.3);">
+              <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-danger); border-bottom: 1px solid rgba(255, 123, 114, 0.2); padding-bottom: 10px;">Danger Zone</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">This action will permanently delete all of your habits, tasks, notes, and chat history from the cloud. This cannot be undone.</p>
+              <button class="btn-primary" style="background: linear-gradient(135deg, #ff4b4b 0%, #a32d2d 100%); color: white; box-shadow: 0 4px 12px rgba(255, 75, 75, 0.3);" onclick="clearAllData()"><i class="ti ti-alert-triangle" style="margin-right: 6px;"></i> Wipe All Cloud Data</button>
+            </div>
+          </div>
+
         </div> </div> </main>
   </div>
 </div>
@@ -591,6 +615,9 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
     
+    // Populate Settings Email
+    document.getElementById('setting-user-email').textContent = user.email;
+    
     const docSnap = await getDoc(doc(db, 'users', currentUser));
     if (docSnap.exists()) {
       const data = docSnap.data();
@@ -635,6 +662,15 @@ async function save() {
   catch(e) { console.error("Error saving to cloud:", e); }
 }
 
+// Data Wipe Function
+async function clearAllData() {
+  if(!confirm("Are you absolutely sure? This will permanently delete everything.")) return;
+  habits = []; dailyTodos = {}; weeklyTodos = []; notes = []; folders = ['General','Work','Ideas'];
+  await save();
+  renderAll();
+  alert("Cloud data successfully wiped.");
+}
+
 function dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 function todayKey() { return dateKey(new Date()); }
 
@@ -656,7 +692,7 @@ function toggleSidebar() {
 // Navigation Switcher
 function sw(t) {
   // Hide all sections, show target
-  ['home','habits','todo','calendar','notes','chat'].forEach(id => {
+  ['home','habits','todo','calendar','notes','chat','settings'].forEach(id => {
     const el = document.getElementById('s-'+id);
     if(el) el.classList.toggle('visible', id===t);
     
@@ -1109,6 +1145,7 @@ window.openNote = openNote;
 window.moveNote = moveNote;
 window.autoSave = autoSave;
 window.delNote = delNote;
+window.clearAllData = clearAllData;
 window.autoResize = autoResize;
 window.handleKey = handleKey;
 window.sendMsg = sendMsg;
