@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>My Dashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css"/>
-<!-- CHART.JS FOR GRAPHS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
@@ -140,6 +139,11 @@
   
   .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
   .section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
+
+  /* --- NEW: Day Selector Pills for Weekly Tasks --- */
+  .weekly-day-picker { display: flex; gap: 6px; }
+  .day-pill { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-secondary); background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; user-select: none; }
+  .day-pill.selected { background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); color: var(--bg-base); border-color: transparent; font-weight: 700; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); }
   
   /* Color Picker */
   .color-picker { -webkit-appearance: none; border: none; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; padding: 0; background: transparent; }
@@ -370,15 +374,28 @@
                 <span id="weekly-count" style="font-size:12px;color:var(--text-secondary)"></span>
               </div>
               <div id="weekly-by-day"></div>
-              <div class="add-row" style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border-subtle);">
-                <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')"/>
-                <!-- UPGRADE: Added 'multiple' attribute and custom layout styling for cleaner look -->
-                <select id="weekly-day-sel" class="custom-input" multiple style="height: 38px; padding: 4px; min-width: 90px; vertical-align: middle;" title="Hold Cmd/Ctrl to select multiple days">
-                  <option value="0">Sun</option><option value="1">Mon</option><option value="2">Tue</option>
-                  <option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option>
-                </select>
-                <select id="weekly-tag-sel" class="custom-input"></select>
-                <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
+              <div class="add-row" style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border-subtle); flex-direction: column; align-items: flex-start;">
+                
+                <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')" style="width: 100%; margin-bottom: 8px;"/>
+                
+                <div style="display: flex; gap: 8px; align-items: center; width: 100%; justify-content: space-between;">
+                  <!-- NEW: Interactive Day Pills -->
+                  <div class="weekly-day-picker" id="weekly-day-picker">
+                    <div class="day-pill" data-val="0" onclick="toggleDayPill(this)">Su</div>
+                    <div class="day-pill" data-val="1" onclick="toggleDayPill(this)">Mo</div>
+                    <div class="day-pill" data-val="2" onclick="toggleDayPill(this)">Tu</div>
+                    <div class="day-pill" data-val="3" onclick="toggleDayPill(this)">We</div>
+                    <div class="day-pill" data-val="4" onclick="toggleDayPill(this)">Th</div>
+                    <div class="day-pill" data-val="5" onclick="toggleDayPill(this)">Fr</div>
+                    <div class="day-pill" data-val="6" onclick="toggleDayPill(this)">Sa</div>
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <select id="weekly-tag-sel" class="custom-input"></select>
+                    <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -635,7 +652,6 @@ function todayKey() { return dateKey(new Date()); }
 
 function init() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  document.getElementById('weekly-day-sel').value = String(new Date().getDay());
   sw('home');
   renderAll();
 }
@@ -917,7 +933,11 @@ function renderWeekly() {
   document.getElementById('weekly-by-day').innerHTML = html;
 }
 
-// UPGRADE: Dynamic looping logic to generate individual task objects for each selected day
+// Toggle logic for the interactive day pills
+function toggleDayPill(el) {
+  el.classList.toggle('selected');
+}
+
 function addTodo(type) {
   if (type === 'daily') {
     const text = document.getElementById('new-daily').value.trim();
@@ -930,14 +950,14 @@ function addTodo(type) {
   } else {
     const text = document.getElementById('new-weekly').value.trim();
     const tag = document.getElementById('weekly-tag-sel').value;
-    const daySelect = document.getElementById('weekly-day-sel');
     
-    // Convert multiple selection options into an integer array
-    const selectedDays = Array.from(daySelect.selectedOptions).map(opt => parseInt(opt.value));
+    // Read the selected visual pills
+    const selectedPills = document.querySelectorAll('#weekly-day-picker .day-pill.selected');
+    const selectedDays = Array.from(selectedPills).map(pill => parseInt(pill.getAttribute('data-val')));
     
     if (!text) return;
     if (selectedDays.length === 0) {
-      selectedDays.push(new Date().getDay()); // Fallback to current day if none highlighted
+      selectedDays.push(new Date().getDay()); // Fallback to today if none clicked
     }
     
     const now = new Date(), dow = now.getDay();
@@ -948,7 +968,8 @@ function addTodo(type) {
     });
     
     document.getElementById('new-weekly').value = '';
-    Array.from(daySelect.options).forEach(opt => opt.selected = false);
+    // Clear selection
+    document.querySelectorAll('#weekly-day-picker .day-pill').forEach(pill => pill.classList.remove('selected'));
   }
   save(); renderTodo(); renderHomeOverview();
 }
@@ -1223,6 +1244,7 @@ window.toggleSidebar = toggleSidebar;
 window.addHabit = addHabit;
 window.delHabit = delHabit;
 window.toggleDay = toggleDay;
+window.toggleDayPill = toggleDayPill;
 window.addTodo = addTodo;
 window.checkDaily = checkDaily;
 window.uncheckDaily = uncheckDaily;
