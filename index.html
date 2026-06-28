@@ -36,7 +36,6 @@
   
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
-  /* PERFORMANCE FIX: Removed fixed background attachment to kill scroll lag */
   body { 
     font-family: var(--font-sans); 
     background: radial-gradient(circle at top left, #0b1426, var(--bg-base));
@@ -45,7 +44,6 @@
     overflow: hidden; 
   }
   
-  /* PERFORMANCE FIX: Reduced blur slightly to save GPU rendering power */
   .glass-panel {
     background: var(--surface-glass);
     backdrop-filter: blur(12px);
@@ -56,114 +54,22 @@
   }
 
   /* --- LAYOUT: SIDEBAR & MAIN CONTENT --- */
-  #app-wrapper {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-  }
-
-  .sidebar {
-    width: 260px;
-    background: var(--surface-solid);
-    border-right: 1px solid var(--border-strong);
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 50;
-  }
+  #app-wrapper { display: flex; height: 100vh; width: 100vw; }
+  .sidebar { width: 260px; background: var(--surface-solid); border-right: 1px solid var(--border-strong); display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 50; }
+  .sidebar.collapsed { transform: translateX(-100%); width: 0; position: absolute; height: 100%; }
+  .sidebar-header { padding: 24px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-subtle); }
+  .sidebar-nav { padding: 20px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   
-  .sidebar.collapsed {
-    transform: translateX(-100%);
-    width: 0;
-    position: absolute;
-    height: 100%;
-  }
-
-  .sidebar-header {
-    padding: 24px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .sidebar-nav {
-    padding: 20px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-  }
-
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 12px 16px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-  }
-
+  .nav-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; text-align: left; transition: all 0.2s; }
   .nav-btn i { font-size: 18px; }
+  .nav-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.03); color: var(--text-primary); }
+  .nav-btn.active { background: linear-gradient(90deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.05) 100%); color: var(--accent-main); border-left: 3px solid var(--accent-main); border-top-left-radius: 0; border-bottom-left-radius: 0; }
 
-  .nav-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--text-primary);
-  }
-
-  .nav-btn.active {
-    background: linear-gradient(90deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.05) 100%);
-    color: var(--accent-main);
-    border-left: 3px solid var(--accent-main);
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-
-  .main-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    position: relative;
-  }
-
-  .top-header {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    border-bottom: 1px solid var(--border-subtle);
-    background: rgba(6, 9, 15, 0.8);
-    backdrop-filter: blur(10px);
-    z-index: 40;
-  }
-
-  .toggle-btn {
-    background: transparent;
-    border: 1px solid var(--border-strong);
-    color: var(--text-primary);
-    width: 36px; height: 36px;
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.2s;
-  }
+  .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; }
+  .top-header { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border-subtle); background: rgba(6, 9, 15, 0.8); backdrop-filter: blur(10px); z-index: 40; }
+  .toggle-btn { background: transparent; border: 1px solid var(--border-strong); color: var(--text-primary); width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
   .toggle-btn:hover { background: rgba(255,255,255,0.05); }
-
-  .content-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 30px;
-  }
-  
+  .content-scroll { flex: 1; overflow-y: auto; padding: 30px; }
   .container { max-width: 900px; margin: 0 auto; }
   
   .section { display: none; animation: fadeIn 0.3s ease forwards; }
@@ -177,8 +83,6 @@
   .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
   @media (max-width: 800px) { .chart-grid { grid-template-columns: 1fr; } .home-grid { grid-template-columns: 1fr; } }
   .chart-container { background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; }
-
-  /* GRAPH STRETCH FIX: Wrapping container to lock the height */
   .chart-wrapper { position: relative; height: 220px; width: 100%; }
 
   /* --- GENERAL COMPONENTS --- */
@@ -199,38 +103,20 @@
   
   .dots { display: flex; gap: 6px; }
   .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); transition: all .2s; }
-  
-  /* Cyan Checkmarks */
-  .dot.done { 
-    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); 
-    border-color: transparent; 
-    color: var(--bg-base); 
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
-    font-weight: 700;
-  }
-  .dot:hover:not(.done) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); color: var(--text-secondary);}
+  .dot.done { background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); border-color: transparent; color: var(--bg-base); box-shadow: 0 0 10px rgba(0, 242, 254, 0.4); font-weight: 700; }
+  .dot.disabled { opacity: 0.2; cursor: not-allowed; }
+  .dot:hover:not(.done):not(.disabled) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); color: var(--text-secondary);}
   
   .goal-bar-wrap { margin: 12px 0 6px; background: rgba(0,0,0,0.4); border-radius: 100px; height: 6px; overflow: hidden; border: 1px solid var(--border-subtle); }
   .goal-bar { height: 100%; border-radius: 100px; transition: width .5s ease; }
   
-  /* Inputs */
+  /* Inputs & Buttons */
   .add-row { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
-  .add-row input, .add-row select, .custom-input { 
-    font-size: 13px; padding: 10px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); 
-    background: rgba(0,0,0,0.2); color: var(--text-primary); transition: all 0.3s; font-family: var(--font-sans);
-  }
+  .add-row input, .add-row select, .custom-input { font-size: 13px; padding: 10px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: rgba(0,0,0,0.2); color: var(--text-primary); transition: all 0.3s; font-family: var(--font-sans); }
   .add-row input { flex: 1; min-width: 140px; }
-  .add-row input:focus, .add-row select:focus, .custom-input:focus { 
-    outline: none; border-color: var(--accent-dark); background: rgba(0,0,0,0.4);
-    box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.15); 
-  }
+  .add-row input:focus, .add-row select:focus, .custom-input:focus { outline: none; border-color: var(--accent-dark); background: rgba(0,0,0,0.4); box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.15); }
   
-  /* Buttons */
-  .btn-primary { 
-    padding: 10px 18px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); border: none; 
-    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); 
-    cursor: pointer; color: var(--bg-base); white-space: nowrap; transition: all 0.2s;
-  }
+  .btn-primary { padding: 10px 18px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); border: none; background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); cursor: pointer; color: var(--bg-base); white-space: nowrap; transition: all 0.2s; }
   .btn-primary:hover { box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3); transform: translateY(-1px);}
   
   .sm-btn { padding: 8px 14px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: rgba(255,255,255,0.03); cursor: pointer; color: var(--text-primary); transition: all 0.2s;}
@@ -241,16 +127,15 @@
   
   .empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 13px; background: rgba(0,0,0,0.1); border-radius: var(--radius-md); border: 1px dashed var(--border-strong);}
   
-  /* Todos */
+  /* Todos & Tags */
   .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid transparent; transition: background 0.2s; }
   .todo-item:hover { background: rgba(255,255,255,0.02); border-color: var(--border-subtle); }
   .todo-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(0,0,0,0.2); color: transparent; transition: all 0.2s; }
   .todo-check.done { background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); border-color: transparent; color: var(--bg-base); box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); }
   .todo-text { flex: 1; font-size: 14px; color: var(--text-primary); }
   .todo-text.done { text-decoration: line-through; color: var(--text-muted); }
-  .todo-tag { font-size: 11px; padding: 3px 8px; border-radius: 100px; border: 1px solid var(--border-strong); color: var(--accent-main); background: rgba(0, 242, 254, 0.05); white-space: nowrap;}
+  .todo-tag { font-size: 11px; padding: 3px 8px; border-radius: 100px; border: 1px solid var(--border-strong); white-space: nowrap; font-weight: 500;}
   
-  /* General Layouts */
   .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
   .section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
   
@@ -265,8 +150,8 @@
   .cal-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
   .cal-nav { background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer; color: var(--text-primary); font-size: 18px; padding: 4px 8px; border-radius: var(--radius-sm); transition: all 0.2s;}
   
-  /* Notes */
-  .notes-sidebar { display: grid; grid-template-columns: 200px 1fr; gap: 16px; min-height: 400px; }
+  /* Enhanced Notes (Rich Text) */
+  .notes-sidebar { display: grid; grid-template-columns: 200px 1fr; gap: 16px; min-height: 450px; }
   @media (max-width: 600px) { .notes-sidebar { grid-template-columns: 1fr; } }
   .folder-list { display: flex; flex-direction: column; gap: 6px; }
   .folder-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid transparent; cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: all 0.2s;}
@@ -281,10 +166,26 @@
   .note-item-title { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .note-item-preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
   
-  .note-editor-wrap { display: flex; flex-direction: column; gap: 8px; }
-  .note-title-inp { font-size: 18px; font-weight: 600; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); color: var(--text-primary); background: rgba(0,0,0,0.2); }
-  .note-body-inp { font-size: 14px; padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); resize: vertical; min-height: 260px; line-height: 1.7; font-family: var(--font-sans); color: var(--text-primary); background: rgba(0,0,0,0.2); }
+  .note-editor-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .note-meta-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .note-title-inp { font-size: 22px; font-weight: 600; padding: 12px 0; border: none; border-bottom: 1px solid var(--border-strong); color: var(--text-primary); background: transparent; }
+  .note-title-inp:focus { outline: none; border-color: var(--accent-dark); }
   
+  .rich-editor { font-size: 14px; padding: 14px 0; border: none; min-height: 300px; line-height: 1.7; font-family: var(--font-sans); color: var(--text-primary); background: transparent; outline: none; overflow-y: auto; }
+  .rich-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); pointer-events: none; display: block; }
+  
+  /* Timer */
+  .timer-circle { width: 250px; height: 250px; border-radius: 50%; border: 4px solid var(--border-strong); margin: 30px auto; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 30px rgba(0, 242, 254, 0.05); }
+  .timer-val { font-size: 64px; font-weight: 700; color: var(--text-primary); letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+  .timer-controls { display: flex; gap: 16px; justify-content: center; margin-bottom: 24px; }
+  
+  /* Settings Tags */
+  .tag-manager-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .tag-edit-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }
+  .color-picker { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; padding: 0; background: transparent; }
+  .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+  .color-picker::-webkit-color-swatch { border: 1px solid var(--border-strong); border-radius: 4px; }
+
   /* Chat */
   .chat-wrap { display: flex; flex-direction: column; height: 600px; padding: 0;}
   .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
@@ -305,16 +206,13 @@
   @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
   
   /* Auth Screen Settings */
-  .auth-bg {
-    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.1), transparent 50%);
-    z-index: 0;
-  }
+  .auth-bg { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.1), transparent 50%); z-index: 0; }
   .g-recaptcha > div { margin: 0 auto; }
 </style>
 </head>
 <body>
 
+<!-- AUTHENTICATION SCREEN -->
 <div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center; position: relative;">
   <div class="auth-bg"></div>
   <div class="card glass-panel" style="width: 100%; max-width: 400px; padding: 3rem 2.5rem; position: relative; z-index: 10;">
@@ -337,9 +235,11 @@
   </div>
 </div>
 
+<!-- APP WRAPPER (SIDEBAR + MAIN) -->
 <div id="app-screen" style="display:none;">
   <div id="app-wrapper">
     
+    <!-- LEFT SIDEBAR -->
     <aside class="sidebar" id="main-sidebar">
       <div class="sidebar-header">
         <i class="ti ti-hexagon-letter-a" style="font-size: 28px; color: var(--accent-main); filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));"></i>
@@ -351,6 +251,7 @@
         <div style="height: 1px; background: var(--border-subtle); margin: 10px 0;"></div>
         <button class="nav-btn" id="nav-habits" onclick="sw('habits')"><i class="ti ti-check"></i> Habits</button>
         <button class="nav-btn" id="nav-todo" onclick="sw('todo')"><i class="ti ti-list-check"></i> To-Do List</button>
+        <button class="nav-btn" id="nav-timer" onclick="sw('timer')"><i class="ti ti-clock"></i> Focus Timer</button>
         <button class="nav-btn" id="nav-calendar" onclick="sw('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
         <button class="nav-btn" id="nav-notes" onclick="sw('notes')"><i class="ti ti-notes"></i> Notes & Docs</button>
         <button class="nav-btn" id="nav-chat" onclick="sw('chat')"><i class="ti ti-message"></i> Ask Claude</button>
@@ -361,15 +262,19 @@
       </div>
     </aside>
 
+    <!-- RIGHT MAIN CONTENT -->
     <main class="main-area">
+      <!-- Top Header Row -->
       <header class="top-header">
         <button class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
         <span id="today-date" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;"></span>
       </header>
       
+      <!-- Scrollable Content Area -->
       <div class="content-scroll">
         <div class="container">
           
+          <!-- HOME / OVERVIEW SECTION -->
           <div class="section visible" id="s-home">
             <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">Welcome Back</h2>
             
@@ -382,7 +287,6 @@
                 <div style="font-size:28px; font-weight:700; margin-bottom:4px;" id="home-habit-stat">0/5</div>
                 <div style="font-size:13px; color:var(--text-secondary);">Habits completed today</div>
               </div>
-              
               <div class="overview-card" onclick="sw('todo')">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                   <i class="ti ti-list-check" style="font-size:20px; color:var(--text-danger);"></i>
@@ -391,7 +295,6 @@
                 <div style="font-size:28px; font-weight:700; margin-bottom:4px;" id="home-task-stat">0</div>
                 <div style="font-size:13px; color:var(--text-secondary);">Pending tasks today</div>
               </div>
-              
               <div class="overview-card" onclick="sw('notes')">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                   <i class="ti ti-notes" style="font-size:20px; color:var(--text-success);"></i>
@@ -405,40 +308,30 @@
             <div class="chart-grid">
               <div class="chart-container">
                 <h3 style="font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--text-secondary);">7-Day Habit Performance</h3>
-                <div class="chart-wrapper">
-                  <canvas id="habitChart"></canvas>
-                </div>
+                <div class="chart-wrapper"><canvas id="habitChart"></canvas></div>
               </div>
               <div class="chart-container">
-                <h3 style="font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--text-secondary);">Today's Tasks</h3>
-                <div class="chart-wrapper">
-                  <canvas id="taskChart"></canvas>
-                </div>
+                <h3 style="font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--text-secondary);">To-Do Task</h3>
+                <div class="chart-wrapper"><canvas id="taskChart"></canvas></div>
               </div>
             </div>
           </div>
 
+          <!-- HABITS SECTION -->
           <div class="section" id="s-habits">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
             <div class="card glass-panel" id="goal-status" style="padding: 1rem 1.5rem;"></div>
             <div id="habits-list"></div>
+            
             <div class="add-row glass-panel" style="padding: 14px;">
+              <!-- Removed Icon Dropdown, strictly the habit name input now -->
               <input type="text" id="new-habit-name" placeholder="Name a new habit..."/>
-              <select id="new-habit-icon">
-                <option value="run">🏃 Exercise</option>
-                <option value="book">📖 Read</option>
-                <option value="droplet">💧 Hydrate</option>
-                <option value="moon">🌙 Sleep</option>
-                <option value="pray">🙏 Pray</option>
-                <option value="pencil">✏️ Journal</option>
-                <option value="chart">📈 Trade</option>
-                <option value="star">⭐ Custom</option>
-              </select>
-              <button class="btn-primary" onclick="addHabit()"><i class="ti ti-plus"></i> Add</button>
+              <button class="btn-primary" onclick="addHabit()"><i class="ti ti-plus"></i> Add Habit</button>
             </div>
           </div>
 
+          <!-- TO-DO SECTION -->
           <div class="section" id="s-todo">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Task Manager</h2>
             <div class="card glass-panel">
@@ -450,10 +343,8 @@
               <div id="daily-pending" style="margin-bottom: 16px;"></div>
               <div class="add-row">
                 <input type="text" id="new-daily" placeholder="What needs to be done today?" onkeydown="if(event.key==='Enter')addTodo('daily')"/>
-                <select id="daily-tag-sel">
-                  <option value="">No tag</option><option value="Work">Work</option><option value="Personal">Personal</option>
-                  <option value="Trading">Trading</option><option value="Business">Business</option><option value="School">School</option>
-                </select>
+                <!-- Dynamic Tag Selector -->
+                <select id="daily-tag-sel" class="custom-input"></select>
                 <button class="sm-btn" onclick="addTodo('daily')"><i class="ti ti-plus"></i></button>
               </div>
               <div style="margin-top:24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
@@ -470,19 +361,40 @@
               <div id="weekly-by-day"></div>
               <div class="add-row" style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border-subtle);">
                 <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')"/>
-                <select id="weekly-day-sel">
+                <select id="weekly-day-sel" class="custom-input">
                   <option value="0">Sun</option><option value="1">Mon</option><option value="2">Tue</option>
                   <option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option>
                 </select>
-                <select id="weekly-tag-sel">
-                  <option value="">Tag</option><option value="Work">Work</option><option value="Personal">Personal</option>
-                  <option value="Trading">Trading</option><option value="Business">Business</option><option value="School">School</option>
-                </select>
+                <!-- Dynamic Tag Selector -->
+                <select id="weekly-tag-sel" class="custom-input"></select>
                 <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
               </div>
             </div>
           </div>
 
+          <!-- TIMER SECTION -->
+          <div class="section" id="s-timer">
+            <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Focus Timer</h2>
+            <div class="card glass-panel" style="text-align: center; padding: 3rem 2rem;">
+              
+              <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                <button class="sm-btn" onclick="setTimer(25)">Focus (25m)</button>
+                <button class="sm-btn" onclick="setTimer(5)">Short Break (5m)</button>
+                <button class="sm-btn" onclick="setTimer(15)">Long Break (15m)</button>
+              </div>
+
+              <div class="timer-circle">
+                <div class="timer-val" id="timer-val">25:00</div>
+              </div>
+
+              <div class="timer-controls">
+                <button class="btn-primary" id="timer-start-btn" onclick="toggleTimer()" style="width: 120px; font-size: 16px;">Start</button>
+                <button class="sm-btn" onclick="resetTimer()" style="width: 120px; font-size: 16px;">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CALENDAR SECTION -->
           <div class="section" id="s-calendar">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Consistency Calendar</h2>
             <div class="card glass-panel" style="padding: 1.5rem;">
@@ -499,6 +411,7 @@
             </div>
           </div>
 
+          <!-- NOTES SECTION -->
           <div class="section" id="s-notes">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Notes & Documents</h2>
             <div class="card glass-panel">
@@ -518,17 +431,34 @@
                 </div>
                 <div class="notes-panel">
                   <div class="note-list" id="note-list"></div>
+                  
+                  <!-- RICH TEXT EDITOR WRAPPER -->
                   <div class="note-editor-wrap" id="note-editor" style="display:none">
-                    <select id="note-folder-sel" class="custom-input" style="font-size:12px;padding:8px 12px;margin-bottom:4px; max-width: 150px;" onchange="moveNote()"></select>
-                    <input class="note-title-inp" id="note-title" placeholder="Note title..." oninput="autoSave()"/>
-                    <textarea class="note-body-inp" id="note-body" placeholder="Start writing..." oninput="autoSave()"></textarea>
+                    <div class="note-meta-bar">
+                      <select id="note-folder-sel" class="custom-input" style="font-size:12px;padding:6px 10px; max-width: 130px;" onchange="moveNote()"></select>
+                      <input type="date" id="note-date" class="custom-input" style="font-size:12px;padding:6px 10px; max-width: 140px;" onchange="autoSave()">
+                      
+                      <!-- Editor Formatting Toolbar -->
+                      <div style="margin-left: auto; display: flex; gap: 4px;">
+                        <button class="sm-btn" onclick="document.execCommand('bold',false,null)" title="Bold"><i class="ti ti-bold"></i></button>
+                        <button class="sm-btn" onclick="document.execCommand('italic',false,null)" title="Italic"><i class="ti ti-italic"></i></button>
+                        <button class="sm-btn" onclick="uploadMedia('image')" title="Insert Image"><i class="ti ti-photo"></i></button>
+                        <button class="sm-btn" onclick="uploadMedia('video')" title="Insert Video"><i class="ti ti-video"></i></button>
+                      </div>
+                    </div>
+                    
+                    <input class="note-title-inp" id="note-title" placeholder="Document Title..." oninput="autoSave()"/>
+                    <!-- Content Editable Div instead of textarea -->
+                    <div class="rich-editor" id="note-body" contenteditable="true" placeholder="Start typing your document here..." oninput="autoSave()"></div>
                   </div>
+                  
                   <div id="note-placeholder" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);min-height:300px; background: rgba(0,0,0,0.1);">Select or create a note</div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- CHAT SECTION -->
           <div class="section" id="s-chat">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">AI Assistant</h2>
             <div class="card glass-panel chat-wrap">
@@ -546,9 +476,32 @@
             </div>
           </div>
 
+          <!-- SETTINGS SECTION -->
           <div class="section" id="s-settings">
-            <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Settings</h2>
+            <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Settings & Preferences</h2>
             
+            <div class="card glass-panel">
+              <h3 style="font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">Daily Habit Goal</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">How many habits do you need to complete for a day to be marked as 'successful' in your charts?</p>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="number" id="setting-daily-goal" class="custom-input" min="1" max="20" style="width: 80px;" onchange="updateDailyGoal(this.value)">
+                <span style="font-size: 14px; color: var(--text-muted);">Habits per day</span>
+              </div>
+            </div>
+
+            <div class="card glass-panel">
+              <h3 style="font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">Custom Task Tags</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Create custom categories and colors for your To-Do lists.</p>
+              
+              <div id="settings-tags-list" class="tag-manager-list" style="margin-bottom: 16px;"></div>
+              
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="color" id="new-tag-color" class="color-picker" value="#00f2fe">
+                <input type="text" id="new-tag-name" class="custom-input" placeholder="Tag Name..." style="flex:1;">
+                <button class="btn-primary" onclick="addCustomTag()">Add Tag</button>
+              </div>
+            </div>
+
             <div class="card glass-panel">
               <h3 style="font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">Account Information</h3>
               <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">Logged in as: <strong id="setting-user-email" style="color:var(--text-primary); margin-left: 5px;">...</strong></p>
@@ -562,17 +515,21 @@
             </div>
           </div>
 
-        </div> </div> </main>
+        </div> <!-- End Container -->
+      </div> <!-- End Content Scroll -->
+    </main>
   </div>
 </div>
 
+<!-- Google reCAPTCHA Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script type="module">
-// --- FIREBASE IMPORTS ---
+// --- FIREBASE IMPORTS (INCLUDING STORAGE) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
 
 // ---> YOUR FIREBASE CONFIG KEYS <---
@@ -589,13 +546,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-const GOAL = 5;
-const iconMap = { run:'🏃', book:'📖', droplet:'💧', moon:'🌙', pray:'🙏', pencil:'✏️', chart:'📈', star:'⭐' };
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 // Cloud State Variables
 let currentUser = null;
+let userSettings = { dailyGoal: 5 };
+let customTags = [
+  { id: 't1', name: 'Work', color: '#4facfe' },
+  { id: 't2', name: 'Personal', color: '#ff7b72' }
+];
 let habits = [];
 let dailyTodos = {};
 let weeklyTodos = [];
@@ -608,6 +569,12 @@ let chatHistory = [];
 let habitChartInst = null;
 let taskChartInst = null;
 
+// Timer Variables
+let timerInt = null;
+let timeLeft = 25 * 60;
+let isTimerRunning = false;
+let currentTimerMode = 25; // default minutes
+
 // --- AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -615,7 +582,6 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
     
-    // Populate Settings Email
     document.getElementById('setting-user-email').textContent = user.email;
     
     const docSnap = await getDoc(doc(db, 'users', currentUser));
@@ -626,7 +592,11 @@ onAuthStateChanged(auth, async (user) => {
       weeklyTodos = data.weeklyTodos || [];
       notes = data.notes || [];
       folders = data.folders || ['General','Work','Ideas'];
+      if(data.userSettings) userSettings = data.userSettings;
+      if(data.customTags) customTags = data.customTags;
     }
+    
+    document.getElementById('setting-daily-goal').value = userSettings.dailyGoal;
     init();
   } else {
     currentUser = null;
@@ -658,17 +628,17 @@ async function logout() { await signOut(auth); }
 
 async function save() {
   if (!currentUser) return;
-  try { await setDoc(doc(db, 'users', currentUser), { habits, dailyTodos, weeklyTodos, notes, folders }, { merge: true }); } 
-  catch(e) { console.error("Error saving to cloud:", e); }
+  try { 
+    await setDoc(doc(db, 'users', currentUser), { 
+      habits, dailyTodos, weeklyTodos, notes, folders, userSettings, customTags 
+    }, { merge: true }); 
+  } catch(e) { console.error("Error saving to cloud:", e); }
 }
 
-// Data Wipe Function
 async function clearAllData() {
   if(!confirm("Are you absolutely sure? This will permanently delete everything.")) return;
   habits = []; dailyTodos = {}; weeklyTodos = []; notes = []; folders = ['General','Work','Ideas'];
-  await save();
-  renderAll();
-  alert("Cloud data successfully wiped.");
+  await save(); renderAll(); alert("Cloud data successfully wiped.");
 }
 
 function dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
@@ -677,125 +647,119 @@ function todayKey() { return dateKey(new Date()); }
 function init() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   document.getElementById('weekly-day-sel').value = String(new Date().getDay());
-  
-  // Set default view to 'home'
   sw('home');
   renderAll();
 }
 
-// Sidebar Toggle Function
 function toggleSidebar() {
   const sidebar = document.getElementById('main-sidebar');
   sidebar.classList.toggle('collapsed');
 }
 
-// Navigation Switcher
 function sw(t) {
-  // Hide all sections, show target
-  ['home','habits','todo','calendar','notes','chat','settings'].forEach(id => {
+  ['home','habits','todo','timer','calendar','notes','chat','settings'].forEach(id => {
     const el = document.getElementById('s-'+id);
     if(el) el.classList.toggle('visible', id===t);
-    
-    // Update Sidebar Navigation highlights
     const navBtn = document.getElementById('nav-'+id);
     if(navBtn) navBtn.classList.toggle('active', id===t);
   });
-  
-  // Auto-close sidebar on mobile after clicking
-  if(window.innerWidth < 800) {
-    document.getElementById('main-sidebar').classList.add('collapsed');
-  }
-  
-  // Re-render specifically for charts if home is clicked
+  if(window.innerWidth < 800) document.getElementById('main-sidebar').classList.add('collapsed');
   if(t === 'home') renderHomeOverview();
 }
 
 function renderAll() { 
   renderHabits(); 
+  renderTagManagement(); // Updates Settings Tag UI
+  renderTagSelects();    // Updates To-Do dropdowns
   renderTodo(); 
   renderCal(); 
   renderNotes(); 
   renderHomeOverview();
 }
 
+// --- SETTINGS LOGIC ---
+function updateDailyGoal(val) {
+  const n = parseInt(val);
+  if(n > 0) { userSettings.dailyGoal = n; save(); renderAll(); }
+}
+
+function renderTagManagement() {
+  const el = document.getElementById('settings-tags-list');
+  el.innerHTML = customTags.map(t => `
+    <div class="tag-edit-row">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="width:14px; height:14px; border-radius:50%; background:${t.color};"></span>
+        <span style="font-size: 14px; font-weight:500;">${t.name}</span>
+      </div>
+      <button class="del-btn" onclick="deleteCustomTag('${t.id}')"><i class="ti ti-x"></i></button>
+    </div>
+  `).join('');
+}
+
+function renderTagSelects() {
+  const opts = `<option value="">No tag</option>` + customTags.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('daily-tag-sel').innerHTML = opts;
+  document.getElementById('weekly-tag-sel').innerHTML = opts;
+}
+
+function addCustomTag() {
+  const name = document.getElementById('new-tag-name').value.trim();
+  const color = document.getElementById('new-tag-color').value;
+  if(!name) return;
+  customTags.push({ id: 'tag_'+Date.now(), name, color });
+  document.getElementById('new-tag-name').value = '';
+  save(); renderTagManagement(); renderTagSelects(); renderTodo();
+}
+
+function deleteCustomTag(id) {
+  customTags = customTags.filter(t => t.id !== id);
+  save(); renderTagManagement(); renderTagSelects(); renderTodo();
+}
+
+function getTagDetails(id) {
+  return customTags.find(t => t.id === id);
+}
+
+
 // --- HOME DASHBOARD & CHARTS LOGIC ---
 function renderHomeOverview() {
-  // Update Quick Stats
   const doneHabits = todayDoneCount();
   const tk = todayKey();
   const daily = dailyTodos[tk] || [];
   const pendingTasks = daily.filter(t => !t.done).length;
   
-  document.getElementById('home-habit-stat').textContent = `${doneHabits}/${Math.max(habits.length, GOAL)}`;
+  document.getElementById('home-habit-stat').textContent = `${doneHabits}/${Math.max(habits.length, userSettings.dailyGoal)}`;
   document.getElementById('home-task-stat').textContent = pendingTasks;
   document.getElementById('home-note-stat').textContent = notes.length;
 
-  // Chart Global Settings
   Chart.defaults.color = '#8b949e';
   Chart.defaults.font.family = "'Inter', sans-serif";
   
-  // --- Chart 1: 7-Day Habit Performance ---
   const habitCtx = document.getElementById('habitChart').getContext('2d');
-  if(habitChartInst) habitChartInst.destroy(); // Clear old chart
-  
-  // Calculate last 7 days data
+  if(habitChartInst) habitChartInst.destroy();
   const days = getWeekDays();
   const dataCounts = [0,0,0,0,0,0,0];
-  habits.forEach(h => {
-    (h.checks || []).forEach((c, i) => { if(c) dataCounts[i]++; });
-  });
+  habits.forEach(h => { (h.checks || []).forEach((c, i) => { if(c) dataCounts[i]++; }); });
 
   habitChartInst = new Chart(habitCtx, {
     type: 'bar',
     data: {
       labels: days,
-      datasets: [{
-        label: 'Habits Completed',
-        data: dataCounts,
-        backgroundColor: 'rgba(0, 242, 254, 0.8)',
-        borderRadius: 4,
-      }]
+      datasets: [{ label: 'Habits Completed', data: dataCounts, backgroundColor: 'rgba(0, 242, 254, 0.8)', borderRadius: 4 }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-        x: { grid: { display: false } }
-      },
-      plugins: { legend: { display: false } }
-    }
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
   });
 
-  // --- Chart 2: Daily Tasks Doughnut ---
   const taskCtx = document.getElementById('taskChart').getContext('2d');
   if(taskChartInst) taskChartInst.destroy();
-  
   const doneTasks = daily.filter(t => t.done).length;
-  // If no tasks exist, show a "No Data" gray ring
   const taskData = daily.length > 0 ? [doneTasks, pendingTasks] : [0, 1];
   const taskColors = daily.length > 0 ? ['#00f2fe', 'rgba(255,255,255,0.05)'] : ['transparent', 'rgba(255,255,255,0.05)'];
 
   taskChartInst = new Chart(taskCtx, {
     type: 'doughnut',
-    data: {
-      labels: ['Completed', 'Pending'],
-      datasets: [{
-        data: taskData,
-        backgroundColor: taskColors,
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '75%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: daily.length > 0 } // Disable tooltip if empty
-      }
-    }
+    data: { labels: ['Completed', 'Pending'], datasets: [{ data: taskData, backgroundColor: taskColors, borderWidth: 0, hoverOffset: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: daily.length > 0 } } }
   });
 }
 
@@ -814,15 +778,19 @@ function todayDoneCount() {
   return habits.filter(h => (h.checks||[])[dow]).length;
 }
 
+// --- HABITS ---
 function renderHabits() {
   const days = getWeekDays();
   const done = todayDoneCount(), total = habits.length;
+  const GOAL = userSettings.dailyGoal;
   const pct = total ? Math.round((done/total)*100) : 0;
   const goalMet = done >= GOAL;
+  
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val">${done}/${Math.max(total,GOAL)}</div></div>
-    <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-val" style="color:${goalMet?'var(--accent-main)':'var(--text-primary)'}">5 habits</div></div>
+    <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-val" style="color:${goalMet?'var(--accent-main)':'var(--text-primary)'}">${GOAL} habits</div></div>
     <div class="stat-card"><div class="stat-label">Rate</div><div class="stat-val">${pct}%</div></div>`;
+    
   document.getElementById('goal-status').innerHTML = `
     <div style="margin-bottom:0">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
@@ -831,22 +799,34 @@ function renderHabits() {
       </div>
       <div class="goal-bar-wrap"><div class="goal-bar" style="width:${Math.min(100,Math.round((done/GOAL)*100))}%;background:${goalMet?'linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%)':'var(--text-muted)'}; box-shadow:${goalMet?'0 0 10px rgba(0, 242, 254, 0.5)':'none'}"></div></div>
     </div>`;
+    
   const el = document.getElementById('habits-list');
   if (!habits.length) { el.innerHTML = '<div class="empty"><i class="ti ti-list-check" style="font-size:32px;display:block;margin-bottom:10px; color:var(--text-secondary);"></i>No habits yet — build your routine below</div>'; return; }
+  
+  const todayIdx = new Date().getDay();
+  
   el.innerHTML = habits.map((h, hi) => `
     <div class="habit-card">
       <div class="habit-header">
-        <span class="habit-name">${iconMap[h.icon]||'⭐'} ${h.name}</span>
+        <span class="habit-name">⭐ ${h.name}</span>
         <div style="display:flex;align-items:center;gap:10px">
           <span class="streak-pill">${calcStreak(h)}d streak</span>
           <button class="del-btn" onclick="delHabit(${hi})"><i class="ti ti-trash"></i></button>
         </div>
       </div>
-      <div class="dots">${days.map((d,di) => `<div class="dot${(h.checks||[])[di]?' done':''}" onclick="toggleDay(${hi},${di})" title="${d}">${d}</div>`).join('')}</div>
+      <div class="dots">${days.map((d,di) => {
+        const isDone = (h.checks||[])[di];
+        const isFuture = di > todayIdx;
+        return `<div class="dot${isDone?' done':''}${isFuture?' disabled':''}" onclick="toggleDay(${hi},${di})" title="${d}">${d}</div>`;
+      }).join('')}</div>
     </div>`).join('');
 }
 
 function toggleDay(hi, di) {
+  if (di > new Date().getDay()) {
+    // Silently block future days
+    return;
+  }
   if (!habits[hi].checks) habits[hi].checks = Array(7).fill(false);
   habits[hi].checks[di] = !habits[hi].checks[di];
   if (!habits[hi].history) habits[hi].history = {};
@@ -856,14 +836,23 @@ function toggleDay(hi, di) {
 
 function addHabit() {
   const name = document.getElementById('new-habit-name').value.trim();
-  const icon = document.getElementById('new-habit-icon').value;
   if (!name) return;
-  habits.push({name, icon, checks: Array(7).fill(false), history: {}});
+  // Defaulting to star icon internally since selector was removed
+  habits.push({name, icon: 'star', checks: Array(7).fill(false), history: {}});
   document.getElementById('new-habit-name').value = '';
   save(); renderHabits(); renderHomeOverview();
 }
-
 function delHabit(i) { habits.splice(i,1); save(); renderHabits(); renderHomeOverview(); }
+
+
+// --- TO-DO ---
+function generateTagHTML(tagId) {
+  if(!tagId) return '';
+  const tagData = getTagDetails(tagId);
+  if(!tagData) return '';
+  // Apply custom color using rgb alpha for background
+  return `<span class="todo-tag" style="color:${tagData.color}; border-color:${tagData.color}; background:transparent;">${tagData.name}</span>`;
+}
 
 function renderTodo() {
   const tk = todayKey();
@@ -871,21 +860,24 @@ function renderTodo() {
   const pending = daily.filter(t => !t.done);
   const done = daily.filter(t => t.done);
   document.getElementById('daily-count').textContent = `${done.length}/${daily.length} done`;
+  
   const pel = document.getElementById('daily-pending');
   if (!pending.length) { pel.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-muted); text-align:center;">Inbox zero. No pending tasks.</div>'; }
   else { pel.innerHTML = pending.map(t => { const ri = daily.indexOf(t); return `<div class="todo-item">
     <div class="todo-check" onclick="checkDaily('${tk}',${ri})"></div>
     <span class="todo-text">${t.text}</span>
-    ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+    ${generateTagHTML(t.tag)}
     <button class="del-btn" onclick="delDaily('${tk}',${ri})"><i class="ti ti-x"></i></button>
   </div>`; }).join(''); }
+  
   const del = document.getElementById('daily-done');
   if (!done.length) { del.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">Nothing completed yet.</div>'; }
   else { del.innerHTML = done.map(t => `<div class="todo-item">
     <div class="todo-check done"><i class="ti ti-check" style="font-size:12px; color:var(--bg-base);"></i></div>
     <span class="todo-text done">${t.text}</span>
-    ${t.tag?`<span class="todo-tag" style="opacity:0.6">${t.tag}</span>`:''}
+    ${generateTagHTML(t.tag)}
   </div>`).join(''); }
+  
   renderWeekly();
 }
 
@@ -896,9 +888,11 @@ function renderWeekly() {
   const thisWeek = weeklyTodos.filter(t => t.weekStart === wk);
   const pending = thisWeek.filter(t => !t.done);
   const done = thisWeek.filter(t => t.done);
+  
   document.getElementById('weekly-count').textContent = `${done.length}/${thisWeek.length} done`;
   const byDay = {};
   pending.forEach(t => { if (!byDay[t.day]) byDay[t.day] = []; byDay[t.day].push(t); });
+  
   let html = '';
   Array.from({length:7}, (_, i) => (dow+i)%7).forEach(d => {
     if (byDay[d] && byDay[d].length) {
@@ -906,7 +900,7 @@ function renderWeekly() {
       byDay[d].forEach(t => { const idx = weeklyTodos.indexOf(t); html += `<div class="todo-item">
         <div class="todo-check" onclick="checkWeekly(${idx})"></div>
         <span class="todo-text">${t.text}</span>
-        ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+        ${generateTagHTML(t.tag)}
         <button class="del-btn" onclick="delWeekly(${idx})"><i class="ti ti-x"></i></button>
       </div>`; });
     }
@@ -917,7 +911,7 @@ function renderWeekly() {
     done.forEach(t => { html += `<div class="todo-item" style="opacity:.6">
       <div class="todo-check done" style="cursor:default"><i class="ti ti-check" style="font-size:12px; color:var(--bg-base);"></i></div>
       <span class="todo-text done">${t.text}</span>
-      ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+      ${generateTagHTML(t.tag)}
     </div>`; });
   }
   document.getElementById('weekly-by-day').innerHTML = html;
@@ -950,7 +944,55 @@ function delDaily(tk, idx) { dailyTodos[tk].splice(idx,1); save(); renderTodo();
 function checkWeekly(idx) { weeklyTodos[idx].done = true; save(); renderWeekly(); }
 function delWeekly(idx) { weeklyTodos.splice(idx,1); save(); renderWeekly(); }
 
+// --- TIMER ENGINE ---
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  document.getElementById('timer-val').textContent = `${m}:${s}`;
+}
+
+function setTimer(mins) {
+  pauseTimer();
+  currentTimerMode = mins;
+  timeLeft = mins * 60;
+  updateTimerDisplay();
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timer-start-btn');
+  if (isTimerRunning) {
+    pauseTimer();
+    btn.textContent = "Resume";
+  } else {
+    isTimerRunning = true;
+    btn.textContent = "Pause";
+    timerInt = setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateTimerDisplay();
+      } else {
+        pauseTimer();
+        alert("Time is up!");
+      }
+    }, 1000);
+  }
+}
+
+function pauseTimer() {
+  isTimerRunning = false;
+  clearInterval(timerInt);
+}
+
+function resetTimer() {
+  pauseTimer();
+  timeLeft = currentTimerMode * 60;
+  updateTimerDisplay();
+  document.getElementById('timer-start-btn').textContent = "Start";
+}
+
+// --- CALENDAR ---
 function renderCal() {
+  const GOAL = userSettings.dailyGoal;
   const now = new Date();
   const disp = new Date(now.getFullYear(), now.getMonth()+calOffset, 1);
   document.getElementById('cal-month-label').textContent = disp.toLocaleDateString('en-US',{month:'long',year:'numeric'});
@@ -978,9 +1020,9 @@ function renderCal() {
   }
   document.getElementById('cal-grid').innerHTML = html;
 }
-
 function calNav(dir) { calOffset += dir; renderCal(); }
 
+// --- ENHANCED NOTES ---
 function renderFolders() {
   document.getElementById('folder-list').innerHTML = folders.map(f => `
     <div class="folder-item${f===activeFolder?' active':''}" onclick="setFolder('${f}')">
@@ -990,37 +1032,31 @@ function renderFolders() {
   const sel = document.getElementById('note-folder-sel');
   if (sel) sel.innerHTML = folders.map(f => `<option value="${f}"${f===activeFolder?'selected':''}>${f}</option>`).join('');
 }
-
-function setFolder(f) {
-  activeFolder = f; activeNote = null;
-  document.getElementById('note-editor').style.display = 'none';
-  document.getElementById('note-placeholder').style.display = 'flex';
-  document.getElementById('del-note-btn').style.display = 'none';
-  renderNotes();
-}
-
+function setFolder(f) { activeFolder = f; activeNote = null; document.getElementById('note-editor').style.display = 'none'; document.getElementById('note-placeholder').style.display = 'flex'; document.getElementById('del-note-btn').style.display = 'none'; renderNotes(); }
 function addFolder() {
   const name = document.getElementById('new-folder-inp').value.trim();
   if (!name || folders.includes(name)) return;
   folders.push(name); document.getElementById('new-folder-inp').value = '';
   save(); renderNotes();
 }
-
 function renderNoteList() {
   const el = document.getElementById('note-list');
   const fn = notes.map((n,i) => ({n,i})).filter(({n}) => n.folder === activeFolder);
   if (!fn.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px;text-align:center;">Folder is empty.</div>'; return; }
   el.innerHTML = fn.map(({n,i}) => `
     <div class="note-item${activeNote===i?' active':''}" onclick="openNote(${i})">
-      <div class="note-item-title">${n.title||'Untitled Note'}</div>
-      <div class="note-item-preview">${(n.body||'').slice(0,40)||'No content...'}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="note-item-title">${n.title||'Untitled Note'}</div>
+        <div style="font-size:10px; color:var(--text-muted);">${n.assignedDate||''}</div>
+      </div>
+      <div class="note-item-preview">Click to view...</div>
     </div>`).join('');
 }
-
 function renderNotes() { renderFolders(); renderNoteList(); }
 
 function newNote() {
-  notes.unshift({title:'', body:'', folder: activeFolder, created: Date.now()});
+  const todayStr = new Date().toISOString().split('T')[0];
+  notes.unshift({title:'', body:'', folder: activeFolder, assignedDate: todayStr, created: Date.now()});
   activeNote = 0; save(); renderNotes(); renderHomeOverview(); openNote(0);
 }
 
@@ -1029,9 +1065,12 @@ function openNote(i) {
   document.getElementById('note-editor').style.display = 'flex';
   document.getElementById('note-placeholder').style.display = 'none';
   document.getElementById('del-note-btn').style.display = '';
+  
   document.getElementById('note-title').value = notes[i].title || '';
-  document.getElementById('note-body').value = notes[i].body || '';
+  document.getElementById('note-body').innerHTML = notes[i].body || '';
   document.getElementById('note-folder-sel').value = notes[i].folder || activeFolder;
+  document.getElementById('note-date').value = notes[i].assignedDate || '';
+  
   document.getElementById('save-ind').textContent = '';
   renderNoteList();
 }
@@ -1045,7 +1084,9 @@ function moveNote() {
 function autoSave() {
   if (activeNote === null) return;
   notes[activeNote].title = document.getElementById('note-title').value;
-  notes[activeNote].body = document.getElementById('note-body').value;
+  notes[activeNote].body = document.getElementById('note-body').innerHTML; // Rich Text Save
+  notes[activeNote].assignedDate = document.getElementById('note-date').value;
+  
   document.getElementById('save-ind').innerHTML = '<i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Saving...';
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { save(); renderNoteList(); renderFolders(); document.getElementById('save-ind').innerHTML = '<i class="ti ti-check"></i> Saved'; setTimeout(() => { document.getElementById('save-ind').textContent = ''; }, 1500); }, 600);
@@ -1060,6 +1101,42 @@ function delNote() {
   save(); renderNotes(); renderHomeOverview();
 }
 
+// Media Upload Logic for Firebase Storage
+async function uploadMedia(type) {
+  if (activeNote === null) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = type === 'image' ? 'image/*' : 'video/*';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    document.getElementById('save-ind').innerHTML = '<i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Uploading...';
+    try {
+      const storageRef = ref(storage, `notes_media/${currentUser}/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      
+      // Insert into Content Editable
+      const editor = document.getElementById('note-body');
+      editor.focus();
+      if(type === 'image') {
+        document.execCommand('insertHTML', false, `<br><img src="${url}" style="max-width:100%; border-radius:8px; border:1px solid rgba(255,255,255,0.1); margin: 10px 0;" /><br>`);
+      } else {
+        document.execCommand('insertHTML', false, `<br><video src="${url}" controls style="max-width:100%; border-radius:8px; border:1px solid rgba(255,255,255,0.1); margin: 10px 0;"></video><br>`);
+      }
+      autoSave();
+    } catch(err) {
+      console.error(err);
+      alert("Media upload failed. Please ensure Firebase Storage rules allow image uploads.");
+      document.getElementById('save-ind').textContent = '';
+    }
+  };
+  input.click();
+}
+
+
 function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
 function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
 
@@ -1067,7 +1144,7 @@ function buildContext() {
   const dow = new Date().getDay();
   const done = habits.filter(h => (h.checks||[])[dow]).map(h => h.name);
   const pending = (dailyTodos[todayKey()]||[]).filter(t => !t.done).map(t => t.text);
-  return `User dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length ? done.join(', ') : 'none'}. Daily goal: ${GOAL}. Pending daily tasks: ${pending.length ? pending.join(', ') : 'none'}. Total habits: ${habits.length}. Total notes: ${notes.length}.`;
+  return `User dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length ? done.join(', ') : 'none'}. Daily goal: ${userSettings.dailyGoal}. Pending daily tasks: ${pending.length ? pending.join(', ') : 'none'}. Total habits: ${habits.length}. Total notes: ${notes.length}.`;
 }
 
 function appendMsg(role, text) {
@@ -1146,6 +1223,13 @@ window.moveNote = moveNote;
 window.autoSave = autoSave;
 window.delNote = delNote;
 window.clearAllData = clearAllData;
+window.updateDailyGoal = updateDailyGoal;
+window.addCustomTag = addCustomTag;
+window.deleteCustomTag = deleteCustomTag;
+window.setTimer = setTimer;
+window.toggleTimer = toggleTimer;
+window.resetTimer = resetTimer;
+window.uploadMedia = uploadMedia;
 window.autoResize = autoResize;
 window.handleKey = handleKey;
 window.sendMsg = sendMsg;
