@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>My Dashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css"/>
+<!-- CHART.JS FOR GRAPHS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
@@ -342,7 +343,6 @@
                 <input type="text" id="new-tag-name" class="custom-input" placeholder="Type new tag name..." style="flex:1;">
                 <button class="btn-primary" onclick="addCustomTag()">Create Tag</button>
               </div>
-              <!-- Existing Tags Displayed Inline -->
               <div id="todo-tags-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
             </div>
 
@@ -372,7 +372,8 @@
               <div id="weekly-by-day"></div>
               <div class="add-row" style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border-subtle);">
                 <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')"/>
-                <select id="weekly-day-sel" class="custom-input">
+                <!-- UPGRADE: Added 'multiple' attribute and custom layout styling for cleaner look -->
+                <select id="weekly-day-sel" class="custom-input" multiple style="height: 38px; padding: 4px; min-width: 90px; vertical-align: middle;" title="Hold Cmd/Ctrl to select multiple days">
                   <option value="0">Sun</option><option value="1">Mon</option><option value="2">Tue</option>
                   <option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option>
                 </select>
@@ -916,6 +917,7 @@ function renderWeekly() {
   document.getElementById('weekly-by-day').innerHTML = html;
 }
 
+// UPGRADE: Dynamic looping logic to generate individual task objects for each selected day
 function addTodo(type) {
   if (type === 'daily') {
     const text = document.getElementById('new-daily').value.trim();
@@ -928,12 +930,25 @@ function addTodo(type) {
   } else {
     const text = document.getElementById('new-weekly').value.trim();
     const tag = document.getElementById('weekly-tag-sel').value;
-    const day = parseInt(document.getElementById('weekly-day-sel').value);
+    const daySelect = document.getElementById('weekly-day-sel');
+    
+    // Convert multiple selection options into an integer array
+    const selectedDays = Array.from(daySelect.selectedOptions).map(opt => parseInt(opt.value));
+    
     if (!text) return;
+    if (selectedDays.length === 0) {
+      selectedDays.push(new Date().getDay()); // Fallback to current day if none highlighted
+    }
+    
     const now = new Date(), dow = now.getDay();
     const weekStart = new Date(now); weekStart.setDate(now.getDate()-dow);
-    weeklyTodos.push({text, tag, day, done: false, weekStart: dateKey(weekStart)});
+    
+    selectedDays.forEach(day => {
+      weeklyTodos.push({text, tag, day, done: false, weekStart: dateKey(weekStart)});
+    });
+    
     document.getElementById('new-weekly').value = '';
+    Array.from(daySelect.options).forEach(opt => opt.selected = false);
   }
   save(); renderTodo(); renderHomeOverview();
 }
