@@ -104,8 +104,8 @@
   .dots { display: flex; gap: 6px; }
   .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); transition: all .2s; }
   .dot.done { background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); border-color: transparent; color: var(--bg-base); box-shadow: 0 0 10px rgba(0, 242, 254, 0.4); font-weight: 700; }
-  .dot.disabled { opacity: 0.2; cursor: not-allowed; }
-  .dot:hover:not(.done):not(.disabled) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); color: var(--text-secondary);}
+  .dot.today-indicator { border-color: var(--accent-dark); color: var(--text-primary); }
+  .dot:hover:not(.done) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); color: var(--text-secondary);}
   
   .goal-bar-wrap { margin: 12px 0 6px; background: rgba(0,0,0,0.4); border-radius: 100px; height: 6px; overflow: hidden; border: 1px solid var(--border-subtle); }
   .goal-bar { height: 100%; border-radius: 100px; transition: width .5s ease; }
@@ -264,13 +264,11 @@
 
     <!-- RIGHT MAIN CONTENT -->
     <main class="main-area">
-      <!-- Top Header Row -->
       <header class="top-header">
         <button class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
         <span id="today-date" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;"></span>
       </header>
       
-      <!-- Scrollable Content Area -->
       <div class="content-scroll">
         <div class="container">
           
@@ -325,7 +323,6 @@
             <div id="habits-list"></div>
             
             <div class="add-row glass-panel" style="padding: 14px;">
-              <!-- Removed Icon Dropdown, strictly the habit name input now -->
               <input type="text" id="new-habit-name" placeholder="Name a new habit..."/>
               <button class="btn-primary" onclick="addHabit()"><i class="ti ti-plus"></i> Add Habit</button>
             </div>
@@ -343,7 +340,6 @@
               <div id="daily-pending" style="margin-bottom: 16px;"></div>
               <div class="add-row">
                 <input type="text" id="new-daily" placeholder="What needs to be done today?" onkeydown="if(event.key==='Enter')addTodo('daily')"/>
-                <!-- Dynamic Tag Selector -->
                 <select id="daily-tag-sel" class="custom-input"></select>
                 <button class="sm-btn" onclick="addTodo('daily')"><i class="ti ti-plus"></i></button>
               </div>
@@ -365,7 +361,6 @@
                   <option value="0">Sun</option><option value="1">Mon</option><option value="2">Tue</option>
                   <option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option>
                 </select>
-                <!-- Dynamic Tag Selector -->
                 <select id="weekly-tag-sel" class="custom-input"></select>
                 <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
               </div>
@@ -432,13 +427,11 @@
                 <div class="notes-panel">
                   <div class="note-list" id="note-list"></div>
                   
-                  <!-- RICH TEXT EDITOR WRAPPER -->
                   <div class="note-editor-wrap" id="note-editor" style="display:none">
                     <div class="note-meta-bar">
                       <select id="note-folder-sel" class="custom-input" style="font-size:12px;padding:6px 10px; max-width: 130px;" onchange="moveNote()"></select>
                       <input type="date" id="note-date" class="custom-input" style="font-size:12px;padding:6px 10px; max-width: 140px;" onchange="autoSave()">
                       
-                      <!-- Editor Formatting Toolbar -->
                       <div style="margin-left: auto; display: flex; gap: 4px;">
                         <button class="sm-btn" onclick="document.execCommand('bold',false,null)" title="Bold"><i class="ti ti-bold"></i></button>
                         <button class="sm-btn" onclick="document.execCommand('italic',false,null)" title="Italic"><i class="ti ti-italic"></i></button>
@@ -448,7 +441,6 @@
                     </div>
                     
                     <input class="note-title-inp" id="note-title" placeholder="Document Title..." oninput="autoSave()"/>
-                    <!-- Content Editable Div instead of textarea -->
                     <div class="rich-editor" id="note-body" contenteditable="true" placeholder="Start typing your document here..." oninput="autoSave()"></div>
                   </div>
                   
@@ -573,7 +565,7 @@ let taskChartInst = null;
 let timerInt = null;
 let timeLeft = 25 * 60;
 let isTimerRunning = false;
-let currentTimerMode = 25; // default minutes
+let currentTimerMode = 25; 
 
 // --- AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, async (user) => {
@@ -669,8 +661,8 @@ function sw(t) {
 
 function renderAll() { 
   renderHabits(); 
-  renderTagManagement(); // Updates Settings Tag UI
-  renderTagSelects();    // Updates To-Do dropdowns
+  renderTagManagement(); 
+  renderTagSelects();    
   renderTodo(); 
   renderCal(); 
   renderNotes(); 
@@ -720,7 +712,6 @@ function getTagDetails(id) {
   return customTags.find(t => t.id === id);
 }
 
-
 // --- HOME DASHBOARD & CHARTS LOGIC ---
 function renderHomeOverview() {
   const doneHabits = todayDoneCount();
@@ -737,14 +728,27 @@ function renderHomeOverview() {
   
   const habitCtx = document.getElementById('habitChart').getContext('2d');
   if(habitChartInst) habitChartInst.destroy();
-  const days = getWeekDays();
+  
+  // Calculate true rolling 7 days for the chart
+  const now = new Date();
+  const daysLabels = [];
   const dataCounts = [0,0,0,0,0,0,0];
-  habits.forEach(h => { (h.checks || []).forEach((c, i) => { if(c) dataCounts[i]++; }); });
+  
+  for(let i=6; i>=0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    daysLabels.push(d.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1));
+    const targetDi = d.getDay();
+    
+    let completedCount = 0;
+    habits.forEach(h => { if((h.checks || [])[targetDi]) completedCount++; });
+    dataCounts[6 - i] = completedCount;
+  }
 
   habitChartInst = new Chart(habitCtx, {
     type: 'bar',
     data: {
-      labels: days,
+      labels: daysLabels,
       datasets: [{ label: 'Habits Completed', data: dataCounts, backgroundColor: 'rgba(0, 242, 254, 0.8)', borderRadius: 4 }]
     },
     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
@@ -763,14 +767,16 @@ function renderHomeOverview() {
   });
 }
 
-function getWeekDays() {
-  const d = new Date(), day = d.getDay();
-  return Array.from({length:7}, (_, i) => { const dd = new Date(d); dd.setDate(d.getDate()-day+i); return dd.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1); });
-}
-
+// Global Streak Calculator (Wraps cleanly over 7 rolling days)
 function calcStreak(h) {
-  const checks = h.checks || []; let s = 0; const today = new Date().getDay();
-  for (let i = today; i >= 0; i--) { if (checks[i]) s++; else break; } return s;
+  const checks = h.checks || []; 
+  let s = 0; 
+  const today = new Date().getDay();
+  for (let i = 0; i < 7; i++) { 
+    let di = (today - i + 7) % 7;
+    if (checks[di]) s++; else break; 
+  } 
+  return s;
 }
 
 function todayDoneCount() {
@@ -778,9 +784,22 @@ function todayDoneCount() {
   return habits.filter(h => (h.checks||[])[dow]).length;
 }
 
-// --- HABITS ---
+// --- HABITS (Rolling 7-Day Logic) ---
 function renderHabits() {
-  const days = getWeekDays();
+  const now = new Date();
+  const rollingDays = [];
+  
+  // Build rolling 7 days array (oldest to newest)
+  for(let i=6; i>=0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    rollingDays.push({
+      label: d.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1),
+      di: d.getDay(),
+      isToday: i === 0
+    });
+  }
+
   const done = todayDoneCount(), total = habits.length;
   const GOAL = userSettings.dailyGoal;
   const pct = total ? Math.round((done/total)*100) : 0;
@@ -803,8 +822,6 @@ function renderHabits() {
   const el = document.getElementById('habits-list');
   if (!habits.length) { el.innerHTML = '<div class="empty"><i class="ti ti-list-check" style="font-size:32px;display:block;margin-bottom:10px; color:var(--text-secondary);"></i>No habits yet — build your routine below</div>'; return; }
   
-  const todayIdx = new Date().getDay();
-  
   el.innerHTML = habits.map((h, hi) => `
     <div class="habit-card">
       <div class="habit-header">
@@ -814,43 +831,38 @@ function renderHabits() {
           <button class="del-btn" onclick="delHabit(${hi})"><i class="ti ti-trash"></i></button>
         </div>
       </div>
-      <div class="dots">${days.map((d,di) => {
-        const isDone = (h.checks||[])[di];
-        const isFuture = di > todayIdx;
-        return `<div class="dot${isDone?' done':''}${isFuture?' disabled':''}" onclick="toggleDay(${hi},${di})" title="${d}">${d}</div>`;
+      <div class="dots">${rollingDays.map(rd => {
+        const isDone = (h.checks||[])[rd.di];
+        return `<div class="dot${isDone?' done':''}${rd.isToday?' today-indicator':''}" onclick="toggleDay(${hi},${rd.di})" title="${rd.label}">${rd.label}</div>`;
       }).join('')}</div>
     </div>`).join('');
 }
 
 function toggleDay(hi, di) {
-  if (di > new Date().getDay()) {
-    // Silently block future days
-    return;
-  }
+  // Since we only display past days and today, we allow toggling on all rendered dots
   if (!habits[hi].checks) habits[hi].checks = Array(7).fill(false);
   habits[hi].checks[di] = !habits[hi].checks[di];
+  
   if (!habits[hi].history) habits[hi].history = {};
   if (di === new Date().getDay()) habits[hi].history[todayKey()] = habits[hi].checks[di];
+  
   save(); renderHabits(); renderCal(); renderHomeOverview();
 }
 
 function addHabit() {
   const name = document.getElementById('new-habit-name').value.trim();
   if (!name) return;
-  // Defaulting to star icon internally since selector was removed
   habits.push({name, icon: 'star', checks: Array(7).fill(false), history: {}});
   document.getElementById('new-habit-name').value = '';
   save(); renderHabits(); renderHomeOverview();
 }
 function delHabit(i) { habits.splice(i,1); save(); renderHabits(); renderHomeOverview(); }
 
-
 // --- TO-DO ---
 function generateTagHTML(tagId) {
   if(!tagId) return '';
   const tagData = getTagDetails(tagId);
   if(!tagData) return '';
-  // Apply custom color using rgb alpha for background
   return `<span class="todo-tag" style="color:${tagData.color}; border-color:${tagData.color}; background:transparent;">${tagData.name}</span>`;
 }
 
@@ -1084,7 +1096,7 @@ function moveNote() {
 function autoSave() {
   if (activeNote === null) return;
   notes[activeNote].title = document.getElementById('note-title').value;
-  notes[activeNote].body = document.getElementById('note-body').innerHTML; // Rich Text Save
+  notes[activeNote].body = document.getElementById('note-body').innerHTML; 
   notes[activeNote].assignedDate = document.getElementById('note-date').value;
   
   document.getElementById('save-ind').innerHTML = '<i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Saving...';
@@ -1101,7 +1113,6 @@ function delNote() {
   save(); renderNotes(); renderHomeOverview();
 }
 
-// Media Upload Logic for Firebase Storage
 async function uploadMedia(type) {
   if (activeNote === null) return;
   const input = document.createElement('input');
@@ -1118,7 +1129,6 @@ async function uploadMedia(type) {
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       
-      // Insert into Content Editable
       const editor = document.getElementById('note-body');
       editor.focus();
       if(type === 'image') {
