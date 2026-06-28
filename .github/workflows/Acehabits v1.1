@@ -1,0 +1,503 @@
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+<script type="module">
+// --- FIREBASE IMPORTS ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+
+// ---> YOUR FIREBASE CONFIG KEYS <---
+const firebaseConfig = {
+  apiKey: "AIzaSyBYhP20XbfVUq1-29rZSBcMZKDTc6syiUY",
+  authDomain: "ace-s-habits.firebaseapp.com",
+  projectId: "ace-s-habits",
+  storageBucket: "ace-s-habits.firebasestorage.app",
+  messagingSenderId: "287581830382",
+  appId: "1:287581830382:web:a181f590adfeddd369c7ff",
+  measurementId: "G-9LHP3HJ6WK"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
+
+const GOAL = 5;
+const iconMap = { run:'🏃', book:'📖', droplet:'💧', moon:'🌙', pray:'🙏', pencil:'✏️', chart:'📈', star:'⭐' };
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// Cloud State Variables
+let currentUser = null;
+let habits = [];
+let dailyTodos = {};
+let weeklyTodos = [];
+let notes = [];
+let folders = ['General','Work','Ideas'];
+let activeNote = null, activeFolder = 'General', calOffset = 0, saveTimer = null;
+let chatHistory = [];
+
+// --- AUTHENTICATION LOGIC ---
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user.uid;
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    
+    // Fetch user data from Cloud Firestore
+    const docSnap = await getDoc(doc(db, 'users', currentUser));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      habits = data.habits || [];
+      dailyTodos = data.dailyTodos || {};
+      weeklyTodos = data.weeklyTodos || [];
+      notes = data.notes || [];
+      folders = data.folders || ['General','Work','Ideas'];
+    }
+    init();
+  } else {
+    currentUser = null;
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+
+async function login() {
+  const e = document.getElementById('auth-email').value;
+  const p = document.getElementById('auth-pass').value;
+  try { await signInWithEmailAndPassword(auth, e, p); document.getElementById('auth-error').textContent = ""; } 
+  catch(err) { document.getElementById('auth-error').textContent = err.message; }
+}
+
+async function signup() {
+  const e = document.getElementById('auth-email').value;
+  const p = document.getElementById('auth-pass').value;
+  try { await createUserWithEmailAndPassword(auth, e, p); document.getElementById('auth-error').textContent = ""; } 
+  catch(err) { document.getElementById('auth-error').textContent = err.message; }
+}
+
+async function logout() {
+  await signOut(auth);
+}
+
+// --- CLOUD SAVE FUNCTION ---
+async function save() {
+  if (!currentUser) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser), {
+      habits, dailyTodos, weeklyTodos, notes, folders
+    }, { merge: true });
+  } catch(e) {
+    console.error("Error saving to cloud:", e);
+  }
+}
+
+function dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function todayKey() { return dateKey(new Date()); }
+
+function init() {
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('weekly-day-sel').value = String(new Date().getDay());
+  renderAll();
+}
+
+function renderAll() { renderHabits(); renderTodo(); renderCal(); renderNotes(); }
+
+function sw(t) {
+  ['habits','todo','calendar','notes','chat'].forEach((id, i) => {
+    document.getElementById('s-'+id).classList.toggle('visible', id===t);
+    document.querySelectorAll('.tab')[i].classList.toggle('active', id===t);
+  });
+}
+
+function getWeekDays() {
+  const d = new Date(), day = d.getDay();
+  return Array.from({length:7}, (_, i) => { const dd = new Date(d); dd.setDate(d.getDate()-day+i); return dd.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1); });
+}
+
+function calcStreak(h) {
+  const checks = h.checks || []; let s = 0; const today = new Date().getDay();
+  for (let i = today; i >= 0; i--) { if (checks[i]) s++; else break; } return s;
+}
+
+function todayDoneCount() {
+  const dow = new Date().getDay();
+  return habits.filter(h => (h.checks||[])[dow]).length;
+}
+
+function renderHabits() {
+  const days = getWeekDays();
+  const done = todayDoneCount(), total = habits.length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  const goalMet = done >= GOAL;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val">${done}/${Math.max(total,GOAL)}</div></div>
+    <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-val" style="color:${goalMet?'#1baf7a':'var(--text-primary)'}">5 habits</div></div>
+    <div class="stat-card"><div class="stat-label">Rate</div><div class="stat-val">${pct}%</div></div>`;
+  document.getElementById('goal-status').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:12px;color:var(--text-muted)">Daily goal: ${done} of ${GOAL} habits</span>
+        <span style="font-size:12px;font-weight:500;color:${goalMet?'#085041':'var(--text-muted)'}">${goalMet?'Goal met!':GOAL-done+' more to go'}</span>
+      </div>
+      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${Math.min(100,Math.round((done/GOAL)*100))}%;background:${goalMet?'#1baf7a':'#eda100'}"></div></div>
+    </div>`;
+  const el = document.getElementById('habits-list');
+  if (!habits.length) { el.innerHTML = '<div class="empty"><i class="ti ti-list-check" style="font-size:26px;display:block;margin-bottom:6px"></i>No habits yet — add one below</div>'; return; }
+  el.innerHTML = habits.map((h, hi) => `
+    <div class="habit-card">
+      <div class="habit-header">
+        <span class="habit-name">${iconMap[h.icon]||'⭐'} ${h.name}</span>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span class="streak-pill">${calcStreak(h)}d streak</span>
+          <button class="del-btn" onclick="delHabit(${hi})"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+      <div class="dots">${days.map((d,di) => `<div class="dot${(h.checks||[])[di]?' done':''}" onclick="toggleDay(${hi},${di})" title="${d}">${d}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function toggleDay(hi, di) {
+  if (!habits[hi].checks) habits[hi].checks = Array(7).fill(false);
+  habits[hi].checks[di] = !habits[hi].checks[di];
+  if (!habits[hi].history) habits[hi].history = {};
+  if (di === new Date().getDay()) habits[hi].history[todayKey()] = habits[hi].checks[di];
+  save(); renderHabits(); renderCal();
+}
+
+function addHabit() {
+  const name = document.getElementById('new-habit-name').value.trim();
+  const icon = document.getElementById('new-habit-icon').value;
+  if (!name) return;
+  habits.push({name, icon, checks: Array(7).fill(false), history: {}});
+  document.getElementById('new-habit-name').value = '';
+  save(); renderHabits();
+}
+
+function delHabit(i) { habits.splice(i,1); save(); renderHabits(); }
+
+function renderTodo() {
+  const tk = todayKey();
+  const daily = dailyTodos[tk] || [];
+  const pending = daily.filter(t => !t.done);
+  const done = daily.filter(t => t.done);
+  document.getElementById('daily-count').textContent = `${done.length}/${daily.length} done`;
+  const pel = document.getElementById('daily-pending');
+  if (!pending.length) { pel.innerHTML = '<div style="padding:8px 0;font-size:13px;color:var(--text-muted)">No pending tasks.</div>'; }
+  else { pel.innerHTML = pending.map(t => { const ri = daily.indexOf(t); return `<div class="todo-item">
+    <div class="todo-check" onclick="checkDaily('${tk}',${ri})"></div>
+    <span class="todo-text">${t.text}</span>
+    ${t.tag?`<span class="todo-tag">${t.tag}`:''}</span>
+    <button class="del-btn" onclick="delDaily('${tk}',${ri})"><i class="ti ti-x"></i></button>
+  </div>`; }).join(''); }
+  const del = document.getElementById('daily-done');
+  if (!done.length) { del.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:5px 0">Nothing completed yet.</div>'; }
+  else { del.innerHTML = done.map(t => `<div class="todo-item">
+    <div class="todo-check done"><i class="ti ti-check" style="font-size:11px"></i></div>
+    <span class="todo-text done">${t.text}</span>
+    ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+  </div>`).join(''); }
+  renderWeekly();
+}
+
+function renderWeekly() {
+  const now = new Date(), dow = now.getDay();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-dow);
+  const wk = dateKey(weekStart);
+  const thisWeek = weeklyTodos.filter(t => t.weekStart === wk);
+  const pending = thisWeek.filter(t => !t.done);
+  const done = thisWeek.filter(t => t.done);
+  document.getElementById('weekly-count').textContent = `${done.length}/${thisWeek.length} done`;
+  const byDay = {};
+  pending.forEach(t => { if (!byDay[t.day]) byDay[t.day] = []; byDay[t.day].push(t); });
+  let html = '';
+  Array.from({length:7}, (_, i) => (dow+i)%7).forEach(d => {
+    if (byDay[d] && byDay[d].length) {
+      html += `<div class="week-day-label">${DAY_NAMES[d]}${d===dow?' — today':''}</div>`;
+      byDay[d].forEach(t => { const idx = weeklyTodos.indexOf(t); html += `<div class="todo-item">
+        <div class="todo-check" onclick="checkWeekly(${idx})"></div>
+        <span class="todo-text">${t.text}</span>
+        ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+        <button class="del-btn" onclick="delWeekly(${idx})"><i class="ti ti-x"></i></button>
+      </div>`; });
+    }
+  });
+  if (!html && !done.length) html = '<div style="padding:8px 0;font-size:13px;color:var(--text-muted)">No tasks this week yet.</div>';
+  if (done.length) {
+    html += `<div class="week-day-label" style="margin-top:10px">Completed this week</div>`;
+    done.forEach(t => { html += `<div class="todo-item" style="opacity:.6">
+      <div class="todo-check done" style="cursor:default"><i class="ti ti-check" style="font-size:11px"></i></div>
+      <span class="todo-text done">${t.text}</span>
+      ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+    </div>`; });
+  }
+  document.getElementById('weekly-by-day').innerHTML = html;
+}
+
+function addTodo(type) {
+  if (type === 'daily') {
+    const text = document.getElementById('new-daily').value.trim();
+    const tag = document.getElementById('daily-tag-sel').value;
+    if (!text) return;
+    const tk = todayKey();
+    if (!dailyTodos[tk]) dailyTodos[tk] = [];
+    dailyTodos[tk].push({text, tag, done: false});
+    document.getElementById('new-daily').value = '';
+  } else {
+    const text = document.getElementById('new-weekly').value.trim();
+    const tag = document.getElementById('weekly-tag-sel').value;
+    const day = parseInt(document.getElementById('weekly-day-sel').value);
+    if (!text) return;
+    const now = new Date(), dow = now.getDay();
+    const weekStart = new Date(now); weekStart.setDate(now.getDate()-dow);
+    weeklyTodos.push({text, tag, day, done: false, weekStart: dateKey(weekStart)});
+    document.getElementById('new-weekly').value = '';
+  }
+  save(); renderTodo();
+}
+
+function checkDaily(tk, idx) { dailyTodos[tk][idx].done = true; save(); renderTodo(); }
+function delDaily(tk, idx) { dailyTodos[tk].splice(idx,1); save(); renderTodo(); }
+function checkWeekly(idx) { weeklyTodos[idx].done = true; save(); renderWeekly(); }
+function delWeekly(idx) { weeklyTodos.splice(idx,1); save(); renderWeekly(); }
+
+function renderCal() {
+  const now = new Date();
+  const disp = new Date(now.getFullYear(), now.getMonth()+calOffset, 1);
+  document.getElementById('cal-month-label').textContent = disp.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const year = disp.getFullYear(), month = disp.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const firstDow = new Date(year, month, 1).getDay();
+  let html = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-head">${d}</div>`).join('');
+  for (let i = 0; i < firstDow; i++) html += `<div class="cal-cell faded"></div>`;
+  const todayDate = now.getDate(), todayMonth = now.getMonth(), todayYear = now.getFullYear();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d===todayDate && month===todayMonth && year===todayYear;
+    const isFuture = new Date(year,month,d) > now && !isToday;
+    const dk = `${year}-${month}-${d}`;
+    let dayDone = isToday ? todayDoneCount() : -1;
+    if (!isToday && !isFuture) {
+      const count = habits.filter(h => h.history && h.history[dk]).length;
+      dayDone = count > 0 ? count : (month < todayMonth || year < todayYear || (month===todayMonth && d < todayDate) ? 0 : -1);
+    }
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (isFuture) cls += ' faded';
+    else if (dayDone >= GOAL) cls += ' green';
+    else if (dayDone >= 0 && dayDone < GOAL) cls += ' red';
+    html += `<div class="${cls}">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function calNav(dir) { calOffset += dir; renderCal(); }
+
+function renderFolders() {
+  document.getElementById('folder-list').innerHTML = folders.map(f => `
+    <div class="folder-item${f===activeFolder?' active':''}" onclick="setFolder('${f}')">
+      <span><i class="ti ti-folder" style="font-size:13px;margin-right:5px"></i>${f}</span>
+      <span class="folder-count">${notes.filter(n=>n.folder===f).length}</span>
+    </div>`).join('');
+  const sel = document.getElementById('note-folder-sel');
+  if (sel) sel.innerHTML = folders.map(f => `<option value="${f}"${f===activeFolder?'selected':''}>${f}</option>`).join('');
+}
+
+function setFolder(f) {
+  activeFolder = f; activeNote = null;
+  document.getElementById('note-editor').style.display = 'none';
+  document.getElementById('note-placeholder').style.display = 'flex';
+  document.getElementById('del-note-btn').style.display = 'none';
+  renderNotes();
+}
+
+function addFolder() {
+  const name = document.getElementById('new-folder-inp').value.trim();
+  if (!name || folders.includes(name)) return;
+  folders.push(name); document.getElementById('new-folder-inp').value = '';
+  save(); renderNotes();
+}
+
+function renderNoteList() {
+  const el = document.getElementById('note-list');
+  const fn = notes.map((n,i) => ({n,i})).filter(({n}) => n.folder === activeFolder);
+  if (!fn.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:5px 3px">No notes in this folder.</div>'; return; }
+  el.innerHTML = fn.map(({n,i}) => `
+    <div class="note-item${activeNote===i?' active':''}" onclick="openNote(${i})">
+      <div class="note-item-title">${n.title||'Untitled'}</div>
+      <div class="note-item-preview">${(n.body||'').slice(0,38)||'Empty note'}</div>
+    </div>`).join('');
+}
+
+function renderNotes() { renderFolders(); renderNoteList(); }
+
+function newNote() {
+  notes.unshift({title:'', body:'', folder: activeFolder, created: Date.now()});
+  activeNote = 0; save(); renderNotes(); openNote(0);
+}
+
+function openNote(i) {
+  activeNote = i;
+  document.getElementById('note-editor').style.display = 'flex';
+  document.getElementById('note-placeholder').style.display = 'none';
+  document.getElementById('del-note-btn').style.display = '';
+  document.getElementById('note-title').value = notes[i].title || '';
+  document.getElementById('note-body').value = notes[i].body || '';
+  document.getElementById('note-folder-sel').value = notes[i].folder || activeFolder;
+  document.getElementById('save-ind').textContent = '';
+  renderNoteList();
+}
+
+function moveNote() {
+  if (activeNote === null) return;
+  notes[activeNote].folder = document.getElementById('note-folder-sel').value;
+  save(); renderNotes();
+}
+
+function autoSave() {
+  if (activeNote === null) return;
+  notes[activeNote].title = document.getElementById('note-title').value;
+  notes[activeNote].body = document.getElementById('note-body').value;
+  document.getElementById('save-ind').textContent = 'Saving...';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { save(); renderNoteList(); renderFolders(); document.getElementById('save-ind').textContent = 'Saved'; setTimeout(() => { document.getElementById('save-ind').textContent = ''; }, 1500); }, 600);
+}
+
+function delNote() {
+  if (activeNote === null) return;
+  notes.splice(activeNote, 1); activeNote = null;
+  document.getElementById('note-editor').style.display = 'none';
+  document.getElementById('note-placeholder').style.display = 'flex';
+  document.getElementById('del-note-btn').style.display = 'none';
+  save(); renderNotes();
+}
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
+
+function buildContext() {
+  const dow = new Date().getDay();
+  const done = habits.filter(h => (h.checks||[])[dow]).map(h => h.name);
+  const pending = (dailyTodos[todayKey()]||[]).filter(t => !t.done).map(t => t.text);
+  return `User dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length ? done.join(', ') : 'none'}. Daily goal: ${GOAL}. Pending daily tasks: ${pending.length ? pending.join(', ') : 'none'}. Total habits: ${habits.length}. Total notes: ${notes.length}.`;
+}
+
+function appendMsg(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const welcome = msgs.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+  const div = document.createElement('div');
+  div.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
+  div.innerHTML = `<div class="msg-avatar">${role==='user'?'R':'C'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'typing-indicator';
+  div.innerHTML = `<div class="msg-avatar">C</div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() { const t = document.getElementById('typing-indicator'); if (t) t.remove(); }
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  appendMsg('user', text);
+  chatHistory.push({role:'user', content: text});
+  showTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: buildContext() + '\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical. You have context about their habits and tasks — use it naturally when relevant.',
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    const reply = data.content && data.content[0] ? data.content[0].text : 'Sorry, something went wrong.';
+    appendMsg('ai', reply);
+    chatHistory.push({role:'assistant', content: reply});
+  } catch(e) {
+    removeTyping();
+    appendMsg('ai', 'Something went wrong — please try again.');
+  }
+  document.getElementById('send-btn').disabled = false;
+}
+
+// --- BINDING FUNCTIONS TO WINDOW FOR MODULE SCOPE ---
+window.login = login;
+window.signup = signup;
+window.logout = logout;
+window.sw = sw;
+window.addHabit = addHabit;
+window.delHabit = delHabit;
+window.toggleDay = toggleDay;
+window.addTodo = addTodo;
+window.checkDaily = checkDaily;
+window.delDaily = delDaily;
+window.checkWeekly = checkWeekly;
+window.delWeekly = delWeekly;
+window.calNav = calNav;
+window.setFolder = setFolder;
+window.addFolder = addFolder;
+window.newNote = newNote;
+window.openNote = openNote;
+window.moveNote = moveNote;
+window.autoSave = autoSave;
+window.delNote = delNote;
+window.autoResize = autoResize;
+window.handleKey = handleKey;
+window.sendMsg = sendMsg;
+</script>
