@@ -7,218 +7,271 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css"/>
 <style>
   :root {
-    /* The Darkness: Pitch black and deep charcoal surfaces */
-    --surface-0: #050505;
-    --surface-1: #121212;
-    --surface-2: #1a1a1a;
+    /* Deep Space Backgrounds */
+    --bg-base: #09090b;
+    --surface-glass: rgba(24, 24, 27, 0.65);
+    --surface-glass-hover: rgba(39, 39, 42, 0.8);
+    --surface-solid: #18181b;
     
-    /* Premium Matte Silver Typography */
-    --text-primary: #e8e8e8;
-    --text-secondary: #a3a3a3;
-    --text-muted: #555555;
+    /* Crisp Modern Typography */
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
     
-    /* Polished Borders */
-    --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.2);
-    --border-accent: #c0c0c0;
+    /* Neon Accents (Indigo to Violet) */
+    --accent-glow: rgba(99, 102, 241, 0.5);
+    --text-accent: #818cf8;
+    --text-danger: #f87171;
     
-    /* Metallic Active States */
-    --bg-accent: #222222;
-    --text-accent: #ffffff;
-    --text-danger: #f09595;
+    /* Glass Borders */
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --border-accent: rgba(99, 102, 241, 0.5);
     
-    --radius: 8px;
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-sans); background: var(--surface-0); color: var(--text-primary); min-height: 100vh; padding: 2rem 1rem; }
-  .container { max-width: 700px; margin: 0 auto; }
   
-  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-  .top-bar h1 { font-size: 22px; font-weight: 500; color: var(--text-primary); letter-spacing: -0.5px; }
-  .top-bar .date { font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap: 10px;}
-  
-  .tabs { display: flex; gap: 5px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .tab { padding: 6px 13px; border-radius: var(--radius); border: 1px solid var(--border); font-size: 13px; cursor: pointer; background: transparent; color: var(--text-secondary); transition: all .2s ease; }
-  
-  /* Shiny Chrome Active Tab */
-  .tab.active { 
-    background: linear-gradient(135deg, #444444 0%, #222222 100%); 
-    border-color: var(--border-accent); 
+  body { 
+    font-family: var(--font-sans); 
+    background-color: var(--bg-base); 
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.08), transparent 25%), 
+      radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.08), transparent 25%);
+    background-attachment: fixed;
     color: var(--text-primary); 
-    font-weight: 500; 
-    box-shadow: 0 0 10px rgba(255,255,255,0.05);
+    min-height: 100vh; 
+    padding: 2rem 1rem; 
   }
-  .tab:hover:not(.active) { background: var(--surface-1); }
   
-  .section { display: none; }
+  .container { max-width: 760px; margin: 0 auto; position: relative; z-index: 10; }
+  
+  /* Glassmorphism Panel Class */
+  .glass-panel {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .top-bar h1 { font-size: 24px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.5px; }
+  .top-bar .date { font-size: 13px; color: var(--text-secondary); display:flex; align-items:center; gap: 10px;}
+  
+  .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(0,0,0,0.3); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: inline-flex;}
+  .tab { padding: 8px 16px; border-radius: var(--radius-sm); border: none; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary); transition: all .3s ease; }
+  
+  /* Neon Active Tab */
+  .tab.active { 
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+    color: #ffffff; 
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  }
+  .tab:hover:not(.active) { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+  
+  .section { display: none; animation: fadeIn 0.4s ease forwards; }
   .section.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   
-  .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .card-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .card { padding: 1.25rem 1.5rem; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px;}
   
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
-  .stat-card { background: var(--surface-1); border-radius: var(--radius); padding: 11px 13px; border: 1px solid var(--border); }
-  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;}
-  .stat-val { font-size: 20px; font-weight: 500; color: var(--text-primary); }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--border-subtle); }
+  .stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;}
+  .stat-val { font-size: 24px; font-weight: 600; color: var(--text-primary); }
   
-  .habit-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: .9rem 1.1rem; margin-bottom: 9px; }
-  .habit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .habit-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.3s;}
+  .habit-card:hover { border-color: var(--border-strong); }
+  .habit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .habit-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-  .streak-pill { font-size: 11px; color: #000; background: linear-gradient(135deg, #ffffff 0%, #999999 50%, #e6e6e6 100%); padding: 2px 7px; border-radius: 100px; font-weight: 600;}
+  .streak-pill { font-size: 11px; color: #fff; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.3); padding: 3px 8px; border-radius: 100px; font-weight: 500;}
   
-  .dots { display: flex; gap: 4px; }
-  .dot { width: 27px; height: 27px; border-radius: 50%; border: 1px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); background: var(--surface-1); transition: all .2s; }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); }
   
-  /* Shiny Chrome Checkmarks */
+  /* Glowing Checkmarks */
   .dot.done { 
-    background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 50%, #f0f0f0 100%); 
-    border-color: #ffffff; 
-    color: #000000; 
-    box-shadow: inset 0 1px 3px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.2);
-    font-weight: bold;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+    border-color: transparent; 
+    color: #ffffff; 
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+    font-weight: 600;
   }
-  .dot:hover:not(.done) { background: var(--surface-0); border-color: var(--border-accent); }
+  .dot:hover:not(.done) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); color: var(--text-secondary);}
   
-  .goal-bar-wrap { margin: 10px 0 4px; background: var(--surface-1); border-radius: 4px; height: 7px; overflow: hidden; border: 1px solid var(--border); }
-  .goal-bar { height: 100%; border-radius: 4px; transition: width .4s; }
+  .goal-bar-wrap { margin: 12px 0 6px; background: rgba(0,0,0,0.4); border-radius: 100px; height: 6px; overflow: hidden; border: 1px solid var(--border-subtle); }
+  .goal-bar { height: 100%; border-radius: 100px; transition: width .5s cubic-bezier(0.4, 0, 0.2, 1); }
   
-  .add-row { display: flex; gap: 7px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-  .add-row input, .add-row select { font-size: 13px; padding: 6px 9px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); }
-  .add-row input { flex: 1; min-width: 120px; }
-  .add-row input:focus, .add-row select:focus { outline: none; border-color: var(--border-accent); box-shadow: 0 0 0 1px var(--border-accent); }
+  /* Modern Inputs */
+  .add-row { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .add-row input, .add-row select, .custom-input { 
+    font-size: 13px; 
+    padding: 10px 14px; 
+    border: 1px solid var(--border-strong); 
+    border-radius: var(--radius-md); 
+    background: rgba(0,0,0,0.2); 
+    color: var(--text-primary); 
+    transition: all 0.3s;
+    font-family: var(--font-sans);
+  }
+  .add-row input { flex: 1; min-width: 140px; }
+  .add-row input:focus, .add-row select:focus, .custom-input:focus { 
+    outline: none; 
+    border-color: #6366f1; 
+    background: rgba(0,0,0,0.4);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); 
+  }
   
-  /* Chrome Buttons */
-  .sm-btn { padding: 6px 12px; font-size: 13px; font-weight: 500; border-radius: var(--radius); border: 1px solid #444; background: linear-gradient(180deg, #2a2a2a 0%, #111 100%); cursor: pointer; color: var(--text-primary); white-space: nowrap; transition: all 0.2s ease;}
-  .sm-btn:hover { border-color: #888; color: #fff; background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);}
+  /* Modern Gradient Buttons */
+  .btn-primary { 
+    padding: 10px 18px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    border-radius: var(--radius-md); 
+    border: none; 
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+    cursor: pointer; 
+    color: #ffffff; 
+    white-space: nowrap; 
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); transform: translateY(-1px);}
   
-  .del-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 3px; transition: color 0.2s;}
-  .del-btn:hover { color: var(--text-danger); }
-  .empty { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 13px; }
+  .sm-btn { padding: 8px 14px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: rgba(255,255,255,0.03); cursor: pointer; color: var(--text-primary); transition: all 0.2s;}
+  .sm-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
   
-  .todo-item { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .todo-item:last-child { border-bottom: none; }
-  .todo-check { width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--surface-1); color: #000; transition: all 0.2s; }
+  .del-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px; padding: 4px; transition: color 0.2s; border-radius: 4px;}
+  .del-btn:hover { color: var(--text-danger); background: rgba(248, 113, 113, 0.1); }
   
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 13px; background: rgba(0,0,0,0.1); border-radius: var(--radius-md); border: 1px dashed var(--border-strong);}
+  
+  .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid transparent; transition: background 0.2s; }
+  .todo-item:hover { background: rgba(255,255,255,0.02); border-color: var(--border-subtle); }
+  
+  .todo-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(0,0,0,0.2); color: transparent; transition: all 0.2s; }
   .todo-check.done { 
-    background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 50%, #f0f0f0 100%); 
-    border-color: #ffffff; 
-    box-shadow: inset 0 1px 3px rgba(255,255,255,0.8), 0 0 5px rgba(255,255,255,0.2);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+    border-color: transparent; 
+    color: #fff;
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
   }
-  .todo-text { flex: 1; font-size: 13px; color: var(--text-primary); }
+  .todo-text { flex: 1; font-size: 14px; color: var(--text-primary); }
   .todo-text.done { text-decoration: line-through; color: var(--text-muted); }
-  .todo-tag { font-size: 11px; padding: 2px 7px; border-radius: 100px; border: 1px solid var(--border-strong); color: var(--text-secondary); background: var(--surface-1); white-space: nowrap; }
+  .todo-tag { font-size: 11px; padding: 3px 8px; border-radius: 100px; border: 1px solid var(--border-strong); color: var(--text-accent); background: rgba(99, 102, 241, 0.1); white-space: nowrap; font-weight: 500;}
   
-  .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding: 10px 0 4px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
-  .section-label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; margin-top: 2px; }
+  .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
   
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 8px; }
-  .cal-head { font-size: 11px; color: var(--text-muted); text-align: center; padding: 3px 0; font-weight: 600;}
-  .cal-cell { aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-secondary); background: var(--surface-1); border: 1px solid var(--border); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+  .cal-head { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4px 0; font-weight: 600;}
+  .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text-secondary); background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); transition: transform 0.2s; }
   
-  /* Chrome Calendar Success */
-  .cal-cell.green { background: linear-gradient(135deg, #444 0%, #222 100%); border-color: #888; color: #fff; box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);}
-  .cal-cell.red { background: #1a0505; border-color: #331111; color: #883333; }
-  .cal-cell.today { border-width: 1.5px; font-weight: bold; }
-  .cal-cell.today.green { border-color: #ffffff; }
-  .cal-cell.today.red { border-color: var(--text-danger); }
-  .cal-cell.today:not(.green):not(.red) { border-color: var(--border-accent); color: var(--text-primary); }
+  .cal-cell.green { background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%); border-color: rgba(99, 102, 241, 0.4); color: var(--text-accent); }
+  .cal-cell.red { background: rgba(248, 113, 113, 0.05); border-color: rgba(248, 113, 113, 0.2); color: var(--text-danger); }
+  .cal-cell.today { border-width: 1.5px; font-weight: 700; border-color: var(--text-primary); color: #fff;}
   .cal-cell.faded { opacity: .2; }
   
-  .cal-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .cal-nav { background: transparent; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; padding: 2px 6px; border-radius: var(--radius); transition: color 0.2s;}
-  .cal-nav:hover { color: #fff; }
+  .cal-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .cal-nav { background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer; color: var(--text-primary); font-size: 18px; padding: 4px 8px; border-radius: var(--radius-sm); transition: all 0.2s;}
+  .cal-nav:hover { background: rgba(255,255,255,0.1); }
   
-  .notes-sidebar { display: grid; grid-template-columns: 190px 1fr; gap: 10px; min-height: 360px; }
-  @media (max-width: 540px) { .notes-sidebar { grid-template-columns: 1fr; } }
-  .folder-list { display: flex; flex-direction: column; gap: 5px; }
-  .folder-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; background: var(--surface-2); font-size: 13px; color: var(--text-secondary); transition: all 0.2s;}
+  .notes-sidebar { display: grid; grid-template-columns: 200px 1fr; gap: 16px; min-height: 400px; }
+  @media (max-width: 600px) { .notes-sidebar { grid-template-columns: 1fr; } }
+  .folder-list { display: flex; flex-direction: column; gap: 6px; }
+  .folder-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid transparent; cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: all 0.2s;}
   
-  .folder-item.active { background: var(--surface-1); border-color: var(--border-accent); color: var(--text-primary); font-weight: 500; }
-  .folder-item:hover:not(.active) { background: var(--surface-1); border-color: var(--border-strong);}
-  .folder-count { font-size: 11px; background: var(--surface-0); padding: 1px 6px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border);}
+  .folder-item.active { background: rgba(255,255,255,0.05); border-color: var(--border-strong); color: var(--text-primary); font-weight: 500; }
+  .folder-item:hover:not(.active) { background: rgba(255,255,255,0.02); border-color: var(--border-subtle);}
+  .folder-count { font-size: 11px; background: rgba(0,0,0,0.3); padding: 2px 7px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border-subtle);}
   
-  .notes-panel { display: flex; flex-direction: column; gap: 7px; }
-  .note-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px; }
-  .note-item { padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; background: var(--surface-2); transition: border-color 0.2s;}
-  .note-item:hover { border-color: var(--border-strong); }
-  .note-item.active { border-color: var(--border-accent); background: var(--surface-1); }
-  .note-item-title { font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .note-item-preview { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .notes-panel { display: flex; flex-direction: column; gap: 10px; }
+  .note-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .note-item { padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.2s;}
+  .note-item:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .note-item.active { border-color: var(--text-accent); background: rgba(99, 102, 241, 0.05); box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2); }
+  .note-item-title { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-item-preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
   
-  .note-editor-wrap { display: flex; flex-direction: column; gap: 6px; }
-  .note-title-inp { font-size: 15px; font-weight: 500; padding: 7px 9px; border-radius: var(--radius); border: 1px solid var(--border-strong); color: var(--text-primary); background: var(--surface-0); }
-  .note-body-inp { font-size: 13px; padding: 9px; border-radius: var(--radius); border: 1px solid var(--border-strong); resize: none; min-height: 220px; line-height: 1.7; font-family: var(--font-sans); color: var(--text-primary); background: var(--surface-0); }
-  .note-title-inp:focus, .note-body-inp:focus, .chat-input:focus { outline: none; border-color: var(--border-accent); box-shadow: 0 0 0 1px var(--border-accent);}
+  .note-editor-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .note-title-inp { font-size: 18px; font-weight: 600; padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); color: var(--text-primary); background: rgba(0,0,0,0.2); }
+  .note-body-inp { font-size: 14px; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); resize: vertical; min-height: 260px; line-height: 1.7; font-family: var(--font-sans); color: var(--text-primary); background: rgba(0,0,0,0.2); }
+  .note-title-inp:focus, .note-body-inp:focus, .chat-input:focus { outline: none; border-color: var(--text-accent); background: rgba(0,0,0,0.4); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);}
   
-  .toolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
-  .save-ind { font-size: 11px; color: var(--text-muted); }
-  .folder-add-row { display: flex; gap: 6px; margin-top: 6px; }
-  .folder-add-row input { flex: 1; font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); }
-  
-  .chat-wrap { display: flex; flex-direction: column; height: 560px; }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 4px 0 12px; display: flex; flex-direction: column; gap: 10px; }
-  .msg { display: flex; gap: 9px; align-items: flex-start; }
+  .chat-wrap { display: flex; flex-direction: column; height: 600px; padding: 0;}
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .msg { display: flex; gap: 12px; align-items: flex-start; }
   .msg.user { flex-direction: row-reverse; }
-  .msg-bubble { max-width: 82%; padding: 9px 13px; border-radius: 12px; font-size: 13px; line-height: 1.65; color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--border); white-space: pre-wrap; word-break: break-word; }
-  .msg.user .msg-bubble { background: #1a1a1a; border-color: #555; }
-  .msg-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; border: 1px solid var(--border-strong); }
+  .msg-bubble { max-width: 82%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; color: var(--text-primary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); white-space: pre-wrap; word-break: break-word; }
+  .msg.user .msg-bubble { background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%); border-color: rgba(99, 102, 241, 0.3); }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; border: 1px solid var(--border-strong); }
+  .msg.user .msg-avatar { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #fff; border: none;}
+  .msg.ai .msg-avatar { background: rgba(0,0,0,0.4); color: var(--text-secondary); }
   
-  /* User Chrome Avatar */
-  .msg.user .msg-avatar { background: linear-gradient(135deg, #ffffff 0%, #999999 50%, #e6e6e6 100%); color: #000; border: none; font-weight: 700;}
-  .msg.ai .msg-avatar { background: var(--surface-0); color: var(--text-secondary); }
+  .chat-input-row { display: flex; gap: 10px; align-items: flex-end; padding: 16px; border-top: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);}
+  .chat-input { flex: 1; font-size: 14px; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); resize: none; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg-base); line-height: 1.5; max-height: 120px; }
   
-  .chat-input-row { display: flex; gap: 7px; align-items: flex-end; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 4px; }
-  .chat-input { flex: 1; font-size: 13px; padding: 8px 11px; border-radius: var(--radius); border: 1px solid var(--border-strong); resize: none; font-family: var(--font-sans); color: var(--text-primary); background: var(--surface-0); line-height: 1.5; max-height: 100px; }
-  
-  /* Primary Chrome Action Button */
-  .send-btn { padding: 8px 14px; font-size: 13px; border-radius: var(--radius); border: none; background: linear-gradient(135deg, #ffffff 0%, #999999 50%, #e6e6e6 100%); cursor: pointer; color: #000; font-weight: 600; flex-shrink: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
-  .send-btn:hover { opacity: 0.9; }
-  .send-btn:disabled { opacity: .3; cursor: not-allowed; }
-  
-  .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: blink 1.2s infinite; margin-right: 2px; }
+  /* Pinterest style glowing background orbs for Auth screen */
+  .glow-orb-1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(79, 70, 229, 0.15); filter: blur(120px); border-radius: 50%; z-index: 0; pointer-events: none;}
+  .glow-orb-2 { position: absolute; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: rgba(124, 58, 237, 0.15); filter: blur(120px); border-radius: 50%; z-index: 0; pointer-events: none;}
+
+  .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: blink 1.4s infinite both; margin-right: 3px; }
   .typing-dot:nth-child(2) { animation-delay: .2s; }
   .typing-dot:nth-child(3) { animation-delay: .4s; }
   @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
-  .chat-welcome { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 13px; }
-  .chat-welcome i { font-size: 28px; display: block; margin-bottom: 8px; color: var(--text-secondary); }
+  .chat-welcome { text-align: center; padding: 3rem 2rem; color: var(--text-muted); font-size: 14px; }
+  .chat-welcome i { font-size: 36px; display: block; margin-bottom: 12px; color: var(--text-accent); filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4));}
   
-  .legend-row { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); }
-  .legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.2);}
-  select { background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius); }
+  /* Google reCAPTCHA specific centering */
+  .g-recaptcha > div { margin: 0 auto; }
 </style>
 </head>
 <body>
 
-<!-- AUTHENTICATION SCREEN -->
-<div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center;">
-  <div class="card" style="width: 100%; max-width: 360px; padding: 2rem;">
-    <h2 style="text-align:center; margin-bottom: 1.5rem; font-weight:500;">Access Dashboard</h2>
-    <input type="email" id="auth-email" placeholder="Email" class="add-row input" style="width:100%; margin-bottom:10px; padding:10px; border-radius:var(--radius); border:1px solid var(--border-strong); background:var(--surface-1); color:var(--text-primary);">
-    <input type="password" id="auth-pass" placeholder="Password" class="add-row input" style="width:100%; margin-bottom:15px; padding:10px; border-radius:var(--radius); border:1px solid var(--border-strong); background:var(--surface-1); color:var(--text-primary);">
-    
-    <!-- THE CORRECTED CAPTCHA DIV -->
-    <div class="g-recaptcha" data-sitekey="6Lez2DotAAAAAErGp2Wqdre16ljBXDMzWttYrXaO" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+<div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center; position: relative; overflow: hidden;">
+  
+  <div class="glow-orb-1"></div>
+  <div class="glow-orb-2"></div>
 
-    <button class="sm-btn" onclick="login()" style="width:100%; padding:10px; margin-bottom:10px; background:linear-gradient(135deg, #444 0%, #222 100%); color:var(--text-primary); border-color:var(--border-accent);">Log In</button>
-    <button class="sm-btn" onclick="signup()" style="width:100%; padding:10px;">Sign Up</button>
-    <div id="auth-error" style="color:var(--text-danger); font-size:12px; margin-top:10px; text-align:center;"></div>
+  <div class="card glass-panel" style="width: 100%; max-width: 400px; padding: 3rem 2.5rem; position: relative; z-index: 10;">
+    <div style="text-align:center; margin-bottom: 2rem;">
+      <i class="ti ti-hexagon-letter-a" style="font-size: 48px; color: var(--text-accent); margin-bottom: 8px; display: inline-block; filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.5));"></i>
+      <h2 style="font-weight:600; font-size: 26px; letter-spacing: -0.5px;">Welcome Back</h2>
+      <p style="font-size: 14px; color: var(--text-secondary); margin-top: 6px;">Sign in to access your dashboard</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+      <input type="email" id="auth-email" placeholder="Email address" class="custom-input" style="width:100%;">
+      <input type="password" id="auth-pass" placeholder="Password" class="custom-input" style="width:100%;">
+    </div>
+    
+    <div class="g-recaptcha" data-sitekey="6Lez2DotAAAAAErGp2Wqdre16ljBXDMzWttYrXaO" data-theme="dark" style="margin-bottom: 20px; display: flex; justify-content: center; transform: scale(0.95); transform-origin: center;"></div>
+
+    <button class="btn-primary" onclick="login()" style="width:100%; padding: 12px; margin-bottom:12px; font-size: 14px;">Log In</button>
+    <button class="sm-btn" onclick="signup()" style="width:100%; padding: 12px; font-size: 14px; background: rgba(255,255,255,0.05);">Create Account</button>
+    
+    <div id="auth-error" style="color:var(--text-danger); font-size:13px; margin-top:16px; text-align:center; min-height: 20px;"></div>
   </div>
 </div>
 
-<!-- MAIN DASHBOARD -->
 <div class="container" id="app-screen" style="display:none;">
   <div class="top-bar">
-    <h1>My dashboard</h1>
+    <h1>Dashboard</h1>
     <span class="date">
       <span id="today-date"></span>
-      <button class="sm-btn" onclick="logout()" style="font-size: 11px; padding: 4px 8px; margin-left: 10px;">Log out</button>
+      <button class="sm-btn" onclick="logout()" style="margin-left: 12px;"><i class="ti ti-logout" style="margin-right:4px;"></i> Logout</button>
     </span>
   </div>
-  <div class="tabs">
+  
+  <div class="tabs glass-panel" style="padding: 6px;">
     <button class="tab active" onclick="sw('habits')"><i class="ti ti-check"></i> Habits</button>
     <button class="tab" onclick="sw('todo')"><i class="ti ti-list-check"></i> To-do</button>
     <button class="tab" onclick="sw('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
@@ -226,13 +279,12 @@
     <button class="tab" onclick="sw('chat')"><i class="ti ti-message"></i> Ask Claude</button>
   </div>
 
-  <!-- HABITS -->
   <div class="section visible" id="s-habits">
     <div class="stats-row" id="stats-row"></div>
-    <div id="goal-status"></div>
+    <div class="card glass-panel" id="goal-status" style="padding: 1rem 1.5rem;"></div>
     <div id="habits-list"></div>
-    <div class="add-row">
-      <input type="text" id="new-habit-name" placeholder="New habit..."/>
+    <div class="add-row glass-panel" style="padding: 14px; border-radius: var(--radius-md);">
+      <input type="text" id="new-habit-name" placeholder="Name a new habit..."/>
       <select id="new-habit-icon">
         <option value="run">🏃 Exercise</option>
         <option value="book">📖 Read</option>
@@ -243,21 +295,20 @@
         <option value="chart">📈 Trade</option>
         <option value="star">⭐ Custom</option>
       </select>
-      <button class="sm-btn" onclick="addHabit()"><i class="ti ti-plus"></i> Add</button>
+      <button class="btn-primary" onclick="addHabit()" style="padding: 10px 16px;"><i class="ti ti-plus"></i> Add</button>
     </div>
   </div>
 
-  <!-- TO-DO -->
   <div class="section" id="s-todo">
-    <div class="card">
+    <div class="card glass-panel">
       <div class="card-header">
-        <span class="card-title">Daily tasks</span>
-        <span id="daily-count" style="font-size:12px;color:var(--text-muted)"></span>
+        <span class="card-title">Daily Focus</span>
+        <span id="daily-count" style="font-size:12px;color:var(--text-secondary)"></span>
       </div>
-      <div class="section-label">To do</div>
-      <div id="daily-pending"></div>
+      <div class="section-label">Pending Tasks</div>
+      <div id="daily-pending" style="margin-bottom: 16px;"></div>
       <div class="add-row">
-        <input type="text" id="new-daily" placeholder="Add a daily task..." onkeydown="if(event.key==='Enter')addTodo('daily')"/>
+        <input type="text" id="new-daily" placeholder="What needs to be done today?" onkeydown="if(event.key==='Enter')addTodo('daily')"/>
         <select id="daily-tag-sel">
           <option value="">No tag</option>
           <option value="Work">Work</option>
@@ -266,107 +317,97 @@
           <option value="Business">Business</option>
           <option value="School">School</option>
         </select>
-        <button class="sm-btn" onclick="addTodo('daily')"><i class="ti ti-plus"></i> Add</button>
+        <button class="sm-btn" onclick="addTodo('daily')"><i class="ti ti-plus"></i></button>
       </div>
-      <div style="margin-top:14px">
+      <div style="margin-top:24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
         <div class="section-label">Completed</div>
         <div id="daily-done"></div>
       </div>
     </div>
-    <div class="card">
+    
+    <div class="card glass-panel">
       <div class="card-header">
-        <span class="card-title">Weekly tasks</span>
-        <span id="weekly-count" style="font-size:12px;color:var(--text-muted)"></span>
+        <span class="card-title">Weekly Pipeline</span>
+        <span id="weekly-count" style="font-size:12px;color:var(--text-secondary)"></span>
       </div>
       <div id="weekly-by-day"></div>
-      <div class="add-row" style="margin-top:6px">
-        <input type="text" id="new-weekly" placeholder="Add a weekly task..." onkeydown="if(event.key==='Enter')addTodo('weekly')"/>
+      <div class="add-row" style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border-subtle);">
+        <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')"/>
         <select id="weekly-day-sel">
-          <option value="0">Sunday</option>
-          <option value="1">Monday</option>
-          <option value="2">Tuesday</option>
-          <option value="3">Wednesday</option>
-          <option value="4">Thursday</option>
-          <option value="5">Friday</option>
-          <option value="6">Saturday</option>
+          <option value="0">Sun</option><option value="1">Mon</option><option value="2">Tue</option>
+          <option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option>
         </select>
         <select id="weekly-tag-sel">
-          <option value="">No tag</option>
-          <option value="Work">Work</option>
-          <option value="Personal">Personal</option>
-          <option value="Trading">Trading</option>
-          <option value="Business">Business</option>
-          <option value="School">School</option>
+          <option value="">Tag</option><option value="Work">Work</option><option value="Personal">Personal</option>
+          <option value="Trading">Trading</option><option value="Business">Business</option><option value="School">School</option>
         </select>
-        <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i> Add</button>
+        <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
       </div>
     </div>
   </div>
 
-  <!-- CALENDAR -->
   <div class="section" id="s-calendar">
-    <div class="card">
-      <div class="cal-month">
+    <div class="card glass-panel" style="padding: 1.5rem;">
+      <div class="cal-month" style="margin-bottom: 16px;">
         <button class="cal-nav" onclick="calNav(-1)"><i class="ti ti-chevron-left"></i></button>
-        <span style="font-size:14px;font-weight:500;color:var(--text-primary)" id="cal-month-label"></span>
+        <span style="font-size:16px;font-weight:600;color:var(--text-primary); letter-spacing: 0.5px;" id="cal-month-label"></span>
         <button class="cal-nav" onclick="calNav(1)"><i class="ti ti-chevron-right"></i></button>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Green = 5+ habits completed. Red = below goal.</div>
-      <div class="cal-grid" id="cal-grid"></div>
-      <div class="legend-row">
-        <span class="legend-item"><span class="legend-dot" style="background:#444"></span>Goal met</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#1a0505; border-color:#331111"></span>Below goal</span>
-        <span class="legend-item"><span class="legend-dot" style="background:var(--surface-1);border:1px solid var(--border)"></span>No data</span>
+      <div class="cal-grid" id="cal-grid" style="margin-bottom: 20px;"></div>
+      <div style="display: flex; gap: 16px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg, rgba(79, 70, 229, 0.4) 0%, rgba(124, 58, 237, 0.4) 100%); border:1px solid rgba(99, 102, 241, 0.5);"></span>Goal met</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:12px;height:12px;border-radius:3px;background:rgba(248, 113, 113, 0.1);border:1px solid rgba(248, 113, 113, 0.3);"></span>Below goal</span>
       </div>
     </div>
   </div>
 
-  <!-- NOTES -->
   <div class="section" id="s-notes">
-    <div class="toolbar">
-      <button class="sm-btn" onclick="newNote()"><i class="ti ti-plus"></i> New note</button>
-      <span class="save-ind" id="save-ind"></span>
-      <button class="sm-btn" onclick="delNote()" id="del-note-btn" style="display:none;color:var(--text-danger);margin-left:auto; border-color:var(--text-danger); background:transparent;"><i class="ti ti-trash"></i> Delete</button>
-    </div>
-    <div class="notes-sidebar">
-      <div>
-        <div class="folder-list" id="folder-list"></div>
-        <div class="folder-add-row">
-          <input type="text" id="new-folder-inp" placeholder="New folder..."/>
-          <button class="sm-btn" onclick="addFolder()" style="padding:5px 9px;font-size:12px"><i class="ti ti-plus"></i></button>
-        </div>
+    <div class="card glass-panel">
+      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+        <button class="btn-primary" onclick="newNote()"><i class="ti ti-plus" style="margin-right:4px;"></i> Create Note</button>
+        <span class="save-ind" id="save-ind" style="margin-left: 10px;"></span>
+        <button class="sm-btn" onclick="delNote()" id="del-note-btn" style="display:none;color:var(--text-danger);margin-left:auto; border-color:rgba(248, 113, 113, 0.3); background:rgba(248, 113, 113, 0.05);"><i class="ti ti-trash"></i> Delete</button>
       </div>
-      <div class="notes-panel">
-        <div class="note-list" id="note-list"></div>
-        <div class="note-editor-wrap" id="note-editor" style="display:none">
-          <select id="note-folder-sel" style="font-size:12px;padding:5px 8px;margin-bottom:2px" onchange="moveNote()"></select>
-          <input class="note-title-inp" id="note-title" placeholder="Note title..." oninput="autoSave()"/>
-          <textarea class="note-body-inp" id="note-body" placeholder="Start writing..." oninput="autoSave()"></textarea>
+      
+      <div class="notes-sidebar">
+        <div>
+          <div class="section-label">Folders</div>
+          <div class="folder-list" id="folder-list" style="margin-bottom: 16px;"></div>
+          <div class="folder-add-row">
+            <input type="text" id="new-folder-inp" placeholder="New folder..."/>
+            <button class="sm-btn" onclick="addFolder()"><i class="ti ti-plus"></i></button>
+          </div>
         </div>
-        <div id="note-placeholder" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;border:1px dashed var(--border-strong);border-radius:12px;min-height:180px">Select or create a note</div>
+        <div class="notes-panel">
+          <div class="note-list" id="note-list"></div>
+          <div class="note-editor-wrap" id="note-editor" style="display:none">
+            <select id="note-folder-sel" class="custom-input" style="font-size:12px;padding:8px 12px;margin-bottom:4px; max-width: 150px;" onchange="moveNote()"></select>
+            <input class="note-title-inp" id="note-title" placeholder="Note title..." oninput="autoSave()"/>
+            <textarea class="note-body-inp" id="note-body" placeholder="Start writing..." oninput="autoSave()"></textarea>
+          </div>
+          <div id="note-placeholder" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);min-height:300px; background: rgba(0,0,0,0.1);">Select or create a note</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- CHAT -->
   <div class="section" id="s-chat">
-    <div class="card chat-wrap">
+    <div class="card glass-panel chat-wrap">
       <div class="chat-messages" id="chat-messages">
         <div class="chat-welcome">
-          <i class="ti ti-message-circle"></i>
-          <strong style="font-size:14px;color:var(--text-primary);display:block;margin-bottom:5px">Ask Claude anything</strong>
-          <p style="font-size:12px;line-height:1.6;color:var(--text-muted)">I'm built into your dashboard. Ask me about your habits, get advice, brainstorm ideas for your business, or anything else.</p>
+          <i class="ti ti-message-2"></i>
+          <strong style="font-size:16px;color:var(--text-primary);display:block;margin-bottom:8px">Claude Assistant</strong>
+          <p style="font-size:13px;line-height:1.6;color:var(--text-secondary); max-width: 400px; margin: 0 auto;">Embedded intelligence. Ask for analysis on your habits, brainstorm ideas, or get workflow advice.</p>
         </div>
       </div>
       <div class="chat-input-row">
-        <textarea class="chat-input" id="chat-input" placeholder="Ask me anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" id="send-btn" onclick="sendMsg()"><i class="ti ti-send"></i></button>
+        <textarea class="chat-input" id="chat-input" placeholder="Message Claude..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="btn-primary" id="send-btn" onclick="sendMsg()" style="padding: 12px; display: flex; align-items: center; justify-content: center;"><i class="ti ti-send" style="font-size: 16px;"></i></button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Google reCAPTCHA Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script type="module">
@@ -443,7 +484,7 @@ async function signup() {
   // Check if the CAPTCHA is completed
   const recaptchaResponse = grecaptcha.getResponse();
   if (recaptchaResponse.length === 0) {
-    document.getElementById('auth-error').textContent = "Please check the CAPTCHA box to prove you are human.";
+    document.getElementById('auth-error').textContent = "Please verify you are human.";
     return; // Stops the function here so no account is created
   }
 
@@ -515,25 +556,25 @@ function renderHabits() {
   const goalMet = done >= GOAL;
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val">${done}/${Math.max(total,GOAL)}</div></div>
-    <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-val" style="color:${goalMet?'#ffffff':'var(--text-primary)'}">5 habits</div></div>
+    <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-val" style="color:${goalMet?'var(--text-accent)':'var(--text-primary)'}">5 habits</div></div>
     <div class="stat-card"><div class="stat-label">Rate</div><div class="stat-val">${pct}%</div></div>`;
   document.getElementById('goal-status').innerHTML = `
-    <div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:12px;color:var(--text-muted)">Daily goal: ${done} of ${GOAL} habits</span>
-        <span style="font-size:12px;font-weight:500;color:${goalMet?'#ffffff':'var(--text-muted)'}">${goalMet?'Goal met!':GOAL-done+' more to go'}</span>
+    <div style="margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--text-secondary)">Daily goal: <strong style="color:var(--text-primary)">${done} of ${GOAL}</strong></span>
+        <span style="font-size:13px;font-weight:600;color:${goalMet?'var(--text-accent)':'var(--text-secondary)'}">${goalMet?'Goal achieved ✨':GOAL-done+' more to go'}</span>
       </div>
-      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${Math.min(100,Math.round((done/GOAL)*100))}%;background:${goalMet?'linear-gradient(135deg, #fff 0%, #a0a0a0 100%)':'#444'}"></div></div>
+      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${Math.min(100,Math.round((done/GOAL)*100))}%;background:${goalMet?'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)':'var(--text-muted)'}; box-shadow:${goalMet?'0 0 10px rgba(99, 102, 241, 0.5)':'none'}"></div></div>
     </div>`;
   const el = document.getElementById('habits-list');
-  if (!habits.length) { el.innerHTML = '<div class="empty"><i class="ti ti-list-check" style="font-size:26px;display:block;margin-bottom:6px"></i>No habits yet — add one below</div>'; return; }
+  if (!habits.length) { el.innerHTML = '<div class="empty"><i class="ti ti-list-check" style="font-size:32px;display:block;margin-bottom:10px; color:var(--text-secondary);"></i>No habits yet — build your routine below</div>'; return; }
   el.innerHTML = habits.map((h, hi) => `
     <div class="habit-card">
       <div class="habit-header">
         <span class="habit-name">${iconMap[h.icon]||'⭐'} ${h.name}</span>
-        <div style="display:flex;align-items:center;gap:7px">
+        <div style="display:flex;align-items:center;gap:10px">
           <span class="streak-pill">${calcStreak(h)}d streak</span>
-          <button class="del-btn" onclick="delHabit(${hi})"><i class="ti ti-x"></i></button>
+          <button class="del-btn" onclick="delHabit(${hi})"><i class="ti ti-trash"></i></button>
         </div>
       </div>
       <div class="dots">${days.map((d,di) => `<div class="dot${(h.checks||[])[di]?' done':''}" onclick="toggleDay(${hi},${di})" title="${d}">${d}</div>`).join('')}</div>
@@ -566,19 +607,19 @@ function renderTodo() {
   const done = daily.filter(t => t.done);
   document.getElementById('daily-count').textContent = `${done.length}/${daily.length} done`;
   const pel = document.getElementById('daily-pending');
-  if (!pending.length) { pel.innerHTML = '<div style="padding:8px 0;font-size:13px;color:var(--text-muted)">No pending tasks.</div>'; }
+  if (!pending.length) { pel.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-muted); text-align:center;">Inbox zero. No pending tasks.</div>'; }
   else { pel.innerHTML = pending.map(t => { const ri = daily.indexOf(t); return `<div class="todo-item">
     <div class="todo-check" onclick="checkDaily('${tk}',${ri})"></div>
     <span class="todo-text">${t.text}</span>
-    ${t.tag?`<span class="todo-tag">${t.tag}`:''}</span>
+    ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
     <button class="del-btn" onclick="delDaily('${tk}',${ri})"><i class="ti ti-x"></i></button>
   </div>`; }).join(''); }
   const del = document.getElementById('daily-done');
-  if (!done.length) { del.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:5px 0">Nothing completed yet.</div>'; }
+  if (!done.length) { del.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">Nothing completed yet.</div>'; }
   else { del.innerHTML = done.map(t => `<div class="todo-item">
-    <div class="todo-check done"><i class="ti ti-check" style="font-size:11px"></i></div>
+    <div class="todo-check done"><i class="ti ti-check" style="font-size:12px; color:#fff;"></i></div>
     <span class="todo-text done">${t.text}</span>
-    ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
+    ${t.tag?`<span class="todo-tag" style="opacity:0.6">${t.tag}</span>`:''}
   </div>`).join(''); }
   renderWeekly();
 }
@@ -605,11 +646,11 @@ function renderWeekly() {
       </div>`; });
     }
   });
-  if (!html && !done.length) html = '<div style="padding:8px 0;font-size:13px;color:var(--text-muted)">No tasks this week yet.</div>';
+  if (!html && !done.length) html = '<div style="padding:16px 0;font-size:13px;color:var(--text-muted); text-align:center;">No upcoming tasks this week.</div>';
   if (done.length) {
-    html += `<div class="week-day-label" style="margin-top:10px">Completed this week</div>`;
+    html += `<div class="week-day-label" style="margin-top:16px">Completed</div>`;
     done.forEach(t => { html += `<div class="todo-item" style="opacity:.6">
-      <div class="todo-check done" style="cursor:default"><i class="ti ti-check" style="font-size:11px"></i></div>
+      <div class="todo-check done" style="cursor:default"><i class="ti ti-check" style="font-size:12px; color:#fff;"></i></div>
       <span class="todo-text done">${t.text}</span>
       ${t.tag?`<span class="todo-tag">${t.tag}</span>`:''}
     </div>`; });
@@ -678,7 +719,7 @@ function calNav(dir) { calOffset += dir; renderCal(); }
 function renderFolders() {
   document.getElementById('folder-list').innerHTML = folders.map(f => `
     <div class="folder-item${f===activeFolder?' active':''}" onclick="setFolder('${f}')">
-      <span><i class="ti ti-folder" style="font-size:13px;margin-right:5px"></i>${f}</span>
+      <span><i class="ti ti-folder" style="font-size:14px;margin-right:8px; opacity:0.8;"></i>${f}</span>
       <span class="folder-count">${notes.filter(n=>n.folder===f).length}</span>
     </div>`).join('');
   const sel = document.getElementById('note-folder-sel');
@@ -703,11 +744,11 @@ function addFolder() {
 function renderNoteList() {
   const el = document.getElementById('note-list');
   const fn = notes.map((n,i) => ({n,i})).filter(({n}) => n.folder === activeFolder);
-  if (!fn.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:5px 3px">No notes in this folder.</div>'; return; }
+  if (!fn.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px;text-align:center;">Folder is empty.</div>'; return; }
   el.innerHTML = fn.map(({n,i}) => `
     <div class="note-item${activeNote===i?' active':''}" onclick="openNote(${i})">
-      <div class="note-item-title">${n.title||'Untitled'}</div>
-      <div class="note-item-preview">${(n.body||'').slice(0,38)||'Empty note'}</div>
+      <div class="note-item-title">${n.title||'Untitled Note'}</div>
+      <div class="note-item-preview">${(n.body||'').slice(0,40)||'No content...'}</div>
     </div>`).join('');
 }
 
@@ -740,9 +781,9 @@ function autoSave() {
   if (activeNote === null) return;
   notes[activeNote].title = document.getElementById('note-title').value;
   notes[activeNote].body = document.getElementById('note-body').value;
-  document.getElementById('save-ind').textContent = 'Saving...';
+  document.getElementById('save-ind').innerHTML = '<i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Saving...';
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { save(); renderNoteList(); renderFolders(); document.getElementById('save-ind').textContent = 'Saved'; setTimeout(() => { document.getElementById('save-ind').textContent = ''; }, 1500); }, 600);
+  saveTimer = setTimeout(() => { save(); renderNoteList(); renderFolders(); document.getElementById('save-ind').innerHTML = '<i class="ti ti-check"></i> Saved'; setTimeout(() => { document.getElementById('save-ind').textContent = ''; }, 1500); }, 600);
 }
 
 function delNote() {
@@ -754,7 +795,7 @@ function delNote() {
   save(); renderNotes();
 }
 
-function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
 function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
 
 function buildContext() {
@@ -770,7 +811,7 @@ function appendMsg(role, text) {
   if (welcome) welcome.remove();
   const div = document.createElement('div');
   div.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
-  div.innerHTML = `<div class="msg-avatar">${role==='user'?'R':'C'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  div.innerHTML = `<div class="msg-avatar">${role==='user'?'<i class="ti ti-user"></i>':'<i class="ti ti-sparkles"></i>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -779,7 +820,7 @@ function showTyping() {
   const msgs = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.className = 'msg ai'; div.id = 'typing-indicator';
-  div.innerHTML = `<div class="msg-avatar">C</div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+  div.innerHTML = `<div class="msg-avatar"><i class="ti ti-sparkles"></i></div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
   msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
 }
 
@@ -842,5 +883,8 @@ window.autoResize = autoResize;
 window.handleKey = handleKey;
 window.sendMsg = sendMsg;
 </script>
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
 </body>
 </html>
