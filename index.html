@@ -193,13 +193,15 @@
 </head>
 <body>
 
+<!-- AUTHENTICATION SCREEN -->
 <div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center;">
   <div class="card" style="width: 100%; max-width: 360px; padding: 2rem;">
     <h2 style="text-align:center; margin-bottom: 1.5rem; font-weight:500;">Access Dashboard</h2>
     <input type="email" id="auth-email" placeholder="Email" class="add-row input" style="width:100%; margin-bottom:10px; padding:10px; border-radius:var(--radius); border:1px solid var(--border-strong); background:var(--surface-1); color:var(--text-primary);">
     <input type="password" id="auth-pass" placeholder="Password" class="add-row input" style="width:100%; margin-bottom:15px; padding:10px; border-radius:var(--radius); border:1px solid var(--border-strong); background:var(--surface-1); color:var(--text-primary);">
     
-    <div class="g-recaptcha" data-sitekey="6LfmwTotAAAAAHdyoSWn3Rx8EvumJIXe0iVLPKXU" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+    <!-- THE CORRECTED CAPTCHA DIV -->
+    <div class="g-recaptcha" data-sitekey="6Lez2DotAAAAAErGp2Wqdre16ljBXDMzWttYrXaO" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
 
     <button class="sm-btn" onclick="login()" style="width:100%; padding:10px; margin-bottom:10px; background:linear-gradient(135deg, #444 0%, #222 100%); color:var(--text-primary); border-color:var(--border-accent);">Log In</button>
     <button class="sm-btn" onclick="signup()" style="width:100%; padding:10px;">Sign Up</button>
@@ -207,6 +209,7 @@
   </div>
 </div>
 
+<!-- MAIN DASHBOARD -->
 <div class="container" id="app-screen" style="display:none;">
   <div class="top-bar">
     <h1>My dashboard</h1>
@@ -223,6 +226,7 @@
     <button class="tab" onclick="sw('chat')"><i class="ti ti-message"></i> Ask Claude</button>
   </div>
 
+  <!-- HABITS -->
   <div class="section visible" id="s-habits">
     <div class="stats-row" id="stats-row"></div>
     <div id="goal-status"></div>
@@ -243,6 +247,7 @@
     </div>
   </div>
 
+  <!-- TO-DO -->
   <div class="section" id="s-todo">
     <div class="card">
       <div class="card-header">
@@ -298,6 +303,7 @@
     </div>
   </div>
 
+  <!-- CALENDAR -->
   <div class="section" id="s-calendar">
     <div class="card">
       <div class="cal-month">
@@ -315,6 +321,7 @@
     </div>
   </div>
 
+  <!-- NOTES -->
   <div class="section" id="s-notes">
     <div class="toolbar">
       <button class="sm-btn" onclick="newNote()"><i class="ti ti-plus"></i> New note</button>
@@ -341,6 +348,7 @@
     </div>
   </div>
 
+  <!-- CHAT -->
   <div class="section" id="s-chat">
     <div class="card chat-wrap">
       <div class="chat-messages" id="chat-messages">
@@ -358,6 +366,7 @@
   </div>
 </div>
 
+<!-- Google reCAPTCHA Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script type="module">
