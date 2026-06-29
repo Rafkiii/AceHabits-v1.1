@@ -200,6 +200,8 @@
   .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; border: 1px solid var(--border-strong); }
   .msg.user .msg-avatar { background: linear-gradient(135deg, var(--accent-main) 0%, var(--accent-dark) 100%); color: var(--bg-base); border: none; }
   .msg.ai .msg-avatar { background: rgba(0,0,0,0.4); color: var(--text-secondary); }
+  
+  /* UPDATED CHAT INPUT ROW */
   .chat-input-row { display: flex; gap: 10px; align-items: flex-end; padding: 16px; border-top: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
   .chat-input { flex: 1; font-size: 14px; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); resize: none; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg-base); line-height: 1.5; max-height: 120px; }
   .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: blink 1.4s infinite both; margin-right: 3px; }
@@ -216,7 +218,6 @@
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="auth-screen" style="display:flex;height:100vh;align-items:center;justify-content:center;position:relative;">
   <div class="auth-bg"></div>
   <div class="card glass-panel" style="width:100%;max-width:400px;padding:3rem 2.5rem;position:relative;z-index:10;">
@@ -236,7 +237,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app-screen" style="display:none;">
   <div id="app-wrapper">
     <aside class="sidebar" id="main-sidebar">
@@ -267,7 +267,6 @@
       <div class="content-scroll">
         <div class="container">
 
-          <!-- HOME -->
           <div class="section visible" id="s-home">
             <h2 style="font-size:24px;font-weight:600;margin-bottom:20px;">Welcome Back</h2>
             <div class="home-grid">
@@ -311,7 +310,6 @@
             </div>
           </div>
 
-          <!-- HABITS -->
           <div class="section" id="s-habits">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
@@ -323,7 +321,6 @@
             </div>
           </div>
 
-          <!-- TODO -->
           <div class="section" id="s-todo">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Task Manager</h2>
             <div class="card glass-panel" style="margin-bottom:20px;padding:1.25rem;">
@@ -376,23 +373,18 @@
             </div>
           </div>
 
-          <!-- TIMER -->
           <div class="section" id="s-timer">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Focus Timer</h2>
             <div class="card glass-panel" style="padding:2rem 2rem 1.5rem;">
-              <!-- Preset buttons -->
               <div class="timer-presets" id="timer-preset-buttons"></div>
-              <!-- Circle display -->
               <div class="timer-circle">
                 <div class="timer-val" id="timer-val">25:00</div>
                 <div class="timer-label" id="timer-name-label">Focus</div>
               </div>
-              <!-- Controls -->
               <div class="timer-controls">
                 <button class="btn-primary" id="timer-start-btn" onclick="toggleTimer()" style="width:120px;font-size:15px;">Start</button>
                 <button class="sm-btn" onclick="resetTimer()" style="width:120px;font-size:15px;">Reset</button>
               </div>
-              <!-- Custom timer builder -->
               <div style="margin-top:16px;border-top:1px solid var(--border-subtle);padding-top:20px;">
                 <p class="section-label" style="text-align:center;margin-bottom:12px;">Create Custom Timer</p>
                 <div class="custom-timer-row">
@@ -405,7 +397,6 @@
             </div>
           </div>
 
-          <!-- CALENDAR -->
           <div class="section" id="s-calendar">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Consistency Calendar</h2>
             <div class="card glass-panel" style="padding:1.5rem;">
@@ -420,7 +411,6 @@
                 <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:12px;height:12px;border-radius:3px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);display:inline-block;"></span>Below goal</span>
                 <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent-main);display:inline-block;"></span>Has event</span>
               </div>
-              <!-- Event panel -->
               <div class="event-panel">
                 <div class="event-panel-header">
                   <span class="event-date-title" id="event-date-title">Select a date to view or add events</span>
@@ -440,7 +430,6 @@
             </div>
           </div>
 
-          <!-- NOTES -->
           <div class="section" id="s-notes">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Notes & Documents</h2>
             <div class="card glass-panel">
@@ -480,7 +469,6 @@
             </div>
           </div>
 
-          <!-- CHAT -->
           <div class="section" id="s-chat">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">AI Assistant</h2>
             <div class="card glass-panel chat-wrap">
@@ -491,14 +479,15 @@
                   <p style="font-size:13px;line-height:1.6;color:var(--text-secondary);max-width:400px;margin:0 auto;">Embedded intelligence. Ask for analysis on your habits, brainstorm ideas, or get workflow advice.</p>
                 </div>
               </div>
+              
               <div class="chat-input-row">
                 <textarea class="chat-input" id="chat-input" placeholder="Message Claude..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="sm-btn" id="mic-btn" onclick="startListening()" style="padding:12px; height: 100%; border-color: var(--accent-main); color: var(--accent-main);"><i class="ti ti-microphone" style="font-size:16px;"></i></button>
                 <button class="btn-primary" id="send-btn" onclick="sendMsg()" style="padding:12px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-send" style="font-size:16px;"></i></button>
               </div>
             </div>
           </div>
 
-          <!-- SETTINGS -->
           <div class="section" id="s-settings">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Settings & Preferences</h2>
             <div class="card glass-panel">
@@ -669,7 +658,6 @@ function sw(t) {
   if (window.innerWidth < 800) document.getElementById('main-sidebar').classList.add('collapsed');
   if (t==='home')     renderHomeOverview();
   if (t==='calendar') renderCal();
-  // FIX: always re-render tags when switching to todo tab
   if (t==='todo') { renderTagManagement(); renderTagSelects(); }
   if (t==='timer') renderTimerPresets();
 }
@@ -692,7 +680,6 @@ function updateDailyGoal(val) {
 }
 
 // ---- TAG STUDIO ----
-// FIX: called on tab switch AND on data changes — always shows current tags
 function renderTagManagement() {
   const el = document.getElementById('todo-tags-list');
   if (!el) return;
@@ -1203,15 +1190,17 @@ async function uploadMedia(type) {
   input.click();
 }
 
-// ---- CHAT ----
+// ---- CHAT & VOICE ENGINE ----
 function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); } }
+
 function buildContext() {
   const dow=new Date().getDay();
   const done=habits.filter(h=>(h.checks||[])[dow]).map(h=>h.name);
   const pending=(dailyTodos[todayKey()]||[]).filter(t=>!t.done).map(t=>t.text);
   return `Dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length?done.join(', '):'none'}. Daily goal: ${userSettings.dailyGoal}. Pending tasks: ${pending.length?pending.join(', '):'none'}. Total habits: ${habits.length}. Notes: ${notes.length}.`;
 }
+
 function appendMsg(role,text) {
   const msgs=document.getElementById('chat-messages');
   const w=msgs.querySelector('.chat-welcome'); if(w) w.remove();
@@ -1219,26 +1208,97 @@ function appendMsg(role,text) {
   div.innerHTML=`<div class="msg-avatar">${role==='user'?'<i class="ti ti-user"></i>':'<i class="ti ti-sparkles"></i>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
   msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
 }
+
 function showTyping() {
   const msgs=document.getElementById('chat-messages');
   const div=document.createElement('div'); div.className='msg ai'; div.id='typing-indicator';
   div.innerHTML=`<div class="msg-avatar"><i class="ti ti-sparkles"></i></div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
   msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
 }
+
 function removeTyping() { const t=document.getElementById('typing-indicator'); if(t) t.remove(); }
+
+// NEW: Start Listening Function (Speech-to-Text)
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Sorry, your browser doesn't support voice recognition.");
+    return;
+  }
+  
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  
+  // Turn mic icon red to show listening state
+  const micIcon = document.querySelector('#mic-btn i');
+  micIcon.style.color = '#ef4444'; 
+  
+  recognition.onresult = function(event) {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById('chat-input').value = transcript;
+    micIcon.style.color = 'inherit'; // Reset color
+    sendMsg(); // Auto-send
+  };
+  
+  recognition.onerror = function() {
+    micIcon.style.color = 'inherit';
+  };
+  
+  recognition.onend = function() {
+    micIcon.style.color = 'inherit';
+  };
+  
+  recognition.start();
+}
+
+// NEW: Speak Out Loud Function (Text-to-Speech)
+function speakOutLoud(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel(); // Stop current speech
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.pitch = 1;
+  utterance.rate = 1; 
+  window.speechSynthesis.speak(utterance);
+}
+
+// UPDATED: Send Message Function
 async function sendMsg() {
   const inp=document.getElementById('chat-input'), text=inp.value.trim();
   if(!text) return;
   inp.value=''; inp.style.height='auto';
   document.getElementById('send-btn').disabled=true;
-  appendMsg('user',text); chatHistory.push({role:'user',content:text}); showTyping();
+  
+  appendMsg('user',text); 
+  chatHistory.push({role:'user',content:text}); 
+  showTyping();
+  
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:buildContext()+'\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical.', messages:chatHistory }) });
-    const data=await res.json(); removeTyping();
-    const reply=data.content&&data.content[0]?data.content[0].text:'Sorry, something went wrong.';
-    appendMsg('ai',reply); chatHistory.push({role:'assistant',content:reply});
-  } catch(e){ removeTyping(); appendMsg('ai','Something went wrong — please try again.'); }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{ 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ 
+        model:'claude-sonnet-4-6', 
+        max_tokens:1000, 
+        system:buildContext()+'\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical.', 
+        messages:chatHistory 
+      }) 
+    });
+    
+    const data=await res.json(); 
+    removeTyping();
+    
+    const reply = data.content && data.content[0] ? data.content[0].text : 'Sorry, something went wrong.';
+    appendMsg('ai',reply); 
+    chatHistory.push({role:'assistant',content:reply});
+    
+    // NEW: Trigger speech automatically
+    speakOutLoud(reply);
+    
+  } catch(e){ 
+    removeTyping(); 
+    appendMsg('ai','Something went wrong — please try again.'); 
+  }
+  
   document.getElementById('send-btn').disabled=false;
 }
 
@@ -1258,7 +1318,8 @@ window.addCustomTag=addCustomTag; window.deleteCustomTag=deleteCustomTag;
 window.applyTimerPreset=applyTimerPreset; window.saveCustomTimer=saveCustomTimer;
 window.deleteCustomTimer=deleteCustomTimer; window.toggleTimer=toggleTimer;
 window.resetTimer=resetTimer; window.autoResize=autoResize; window.handleKey=handleKey;
-window.sendMsg=sendMsg;
+window.sendMsg=sendMsg; 
+window.startListening=startListening; // Expose the new mic function
 </script>
 </body>
 </html>
