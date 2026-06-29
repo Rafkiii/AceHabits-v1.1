@@ -140,7 +140,7 @@
   .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
   .section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
 
-  /* --- NEW: Day Selector Pills for Weekly Tasks --- */
+  /* --- Day Selector Pills for Weekly Tasks --- */
   .weekly-day-picker { display: flex; gap: 6px; }
   .day-pill { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-secondary); background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; user-select: none; }
   .day-pill.selected { background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-main) 100%); color: var(--bg-base); border-color: transparent; font-weight: 700; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); }
@@ -216,7 +216,6 @@
 </head>
 <body>
 
-<!-- AUTHENTICATION SCREEN -->
 <div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center; position: relative;">
   <div class="auth-bg"></div>
   <div class="card glass-panel" style="width: 100%; max-width: 400px; padding: 3rem 2.5rem; position: relative; z-index: 10;">
@@ -239,11 +238,9 @@
   </div>
 </div>
 
-<!-- APP WRAPPER -->
 <div id="app-screen" style="display:none;">
   <div id="app-wrapper">
     
-    <!-- LEFT SIDEBAR -->
     <aside class="sidebar" id="main-sidebar">
       <div class="sidebar-header">
         <i class="ti ti-hexagon-letter-a" style="font-size: 28px; color: var(--accent-main); filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));"></i>
@@ -266,7 +263,6 @@
       </div>
     </aside>
 
-    <!-- RIGHT MAIN CONTENT -->
     <main class="main-area">
       <header class="top-header">
         <button class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
@@ -276,7 +272,6 @@
       <div class="content-scroll">
         <div class="container">
           
-          <!-- HOME / OVERVIEW SECTION -->
           <div class="section visible" id="s-home">
             <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">Welcome Back</h2>
             
@@ -319,7 +314,6 @@
             </div>
           </div>
 
-          <!-- HABITS SECTION -->
           <div class="section" id="s-habits">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
@@ -332,11 +326,9 @@
             </div>
           </div>
 
-          <!-- TO-DO SECTION -->
           <div class="section" id="s-todo">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Task Manager</h2>
             
-            <!-- Inline Custom Tag Manager -->
             <div class="card glass-panel" style="margin-bottom: 20px; padding: 1.25rem;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Tag Studio</h3>
@@ -359,7 +351,7 @@
               <div id="daily-pending" style="margin-bottom: 16px;"></div>
               <div class="add-row">
                 <input type="text" id="new-daily" placeholder="What needs to be done today?" onkeydown="if(event.key==='Enter')addTodo('daily')"/>
-                <select id="daily-tag-sel" class="custom-input"></select>
+                <select id="daily-tag-sel" class="custom-input" style="min-width: 110px;"></select>
                 <button class="sm-btn" onclick="addTodo('daily')"><i class="ti ti-plus"></i></button>
               </div>
               <div style="margin-top:24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
@@ -379,7 +371,6 @@
                 <input type="text" id="new-weekly" placeholder="Add upcoming task..." onkeydown="if(event.key==='Enter')addTodo('weekly')" style="width: 100%; margin-bottom: 8px;"/>
                 
                 <div style="display: flex; gap: 8px; align-items: center; width: 100%; justify-content: space-between;">
-                  <!-- NEW: Interactive Day Pills -->
                   <div class="weekly-day-picker" id="weekly-day-picker">
                     <div class="day-pill" data-val="0" onclick="toggleDayPill(this)">Su</div>
                     <div class="day-pill" data-val="1" onclick="toggleDayPill(this)">Mo</div>
@@ -391,7 +382,7 @@
                   </div>
                   
                   <div style="display: flex; gap: 8px; align-items: center;">
-                    <select id="weekly-tag-sel" class="custom-input"></select>
+                    <select id="weekly-tag-sel" class="custom-input" style="min-width: 110px;"></select>
                     <button class="sm-btn" onclick="addTodo('weekly')"><i class="ti ti-plus"></i></button>
                   </div>
                 </div>
@@ -400,7 +391,6 @@
             </div>
           </div>
 
-          <!-- TIMER SECTION -->
           <div class="section" id="s-timer">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Focus Timer</h2>
             <div class="card glass-panel" style="text-align: center; padding: 3rem 2rem;">
@@ -422,7 +412,6 @@
             </div>
           </div>
 
-          <!-- CALENDAR SECTION -->
           <div class="section" id="s-calendar">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Consistency Calendar</h2>
             <div class="card glass-panel" style="padding: 1.5rem;">
@@ -439,7 +428,6 @@
             </div>
           </div>
 
-          <!-- NOTES SECTION -->
           <div class="section" id="s-notes">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Notes & Documents</h2>
             <div class="card glass-panel">
@@ -483,7 +471,6 @@
             </div>
           </div>
 
-          <!-- CHAT SECTION -->
           <div class="section" id="s-chat">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">AI Assistant</h2>
             <div class="card glass-panel chat-wrap">
@@ -501,7 +488,6 @@
             </div>
           </div>
 
-          <!-- SETTINGS SECTION -->
           <div class="section" id="s-settings">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Settings & Preferences</h2>
             
@@ -527,13 +513,10 @@
             </div>
           </div>
 
-        </div> <!-- End Container -->
-      </div> <!-- End Content Scroll -->
-    </main>
+        </div> </div> </main>
   </div>
 </div>
 
-<!-- Google reCAPTCHA Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script type="module">
@@ -560,12 +543,17 @@ const storage = getStorage(app);
 
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
+// NEW: Default Presets
+const DEFAULT_TAGS = [
+  { id: 'tag_work', name: 'Work', color: '#4facfe' },
+  { id: 'tag_personal', name: 'Personal', color: '#ff7b72' },
+  { id: 'tag_trading', name: 'Trading', color: '#00f2fe' },
+  { id: 'tag_business', name: 'Business', color: '#3fb950' }
+];
+
 let currentUser = null;
 let userSettings = { dailyGoal: 5 };
-let customTags = [
-  { id: 't1', name: 'Work', color: '#4facfe' },
-  { id: 't2', name: 'Personal', color: '#ff7b72' }
-];
+let customTags = [...DEFAULT_TAGS];
 let habits = [];
 let dailyTodos = {};
 let weeklyTodos = [];
@@ -599,7 +587,14 @@ onAuthStateChanged(auth, async (user) => {
       notes = data.notes || [];
       folders = data.folders || ['General','Work','Ideas'];
       if(data.userSettings) userSettings = data.userSettings;
-      if(data.customTags) customTags = data.customTags;
+      
+      // Robust Tag Loading: If cloud tags exist, use them. If empty or undefined, use defaults.
+      if(data.customTags && data.customTags.length > 0) {
+        customTags = data.customTags;
+      } else {
+        customTags = [...DEFAULT_TAGS];
+        save(); // Force save to update the empty array in the cloud
+      }
     }
     
     document.getElementById('setting-daily-goal').value = userSettings.dailyGoal;
@@ -933,7 +928,6 @@ function renderWeekly() {
   document.getElementById('weekly-by-day').innerHTML = html;
 }
 
-// Toggle logic for the interactive day pills
 function toggleDayPill(el) {
   el.classList.toggle('selected');
 }
@@ -951,13 +945,12 @@ function addTodo(type) {
     const text = document.getElementById('new-weekly').value.trim();
     const tag = document.getElementById('weekly-tag-sel').value;
     
-    // Read the selected visual pills
     const selectedPills = document.querySelectorAll('#weekly-day-picker .day-pill.selected');
     const selectedDays = Array.from(selectedPills).map(pill => parseInt(pill.getAttribute('data-val')));
     
     if (!text) return;
     if (selectedDays.length === 0) {
-      selectedDays.push(new Date().getDay()); // Fallback to today if none clicked
+      selectedDays.push(new Date().getDay()); 
     }
     
     const now = new Date(), dow = now.getDay();
@@ -968,7 +961,6 @@ function addTodo(type) {
     });
     
     document.getElementById('new-weekly').value = '';
-    // Clear selection
     document.querySelectorAll('#weekly-day-picker .day-pill').forEach(pill => pill.classList.remove('selected'));
   }
   save(); renderTodo(); renderHomeOverview();
