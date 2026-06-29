@@ -216,6 +216,7 @@
 </head>
 <body>
 
+<!-- AUTHENTICATION SCREEN -->
 <div id="auth-screen" style="display:flex; height:100vh; align-items:center; justify-content:center; position: relative;">
   <div class="auth-bg"></div>
   <div class="card glass-panel" style="width: 100%; max-width: 400px; padding: 3rem 2.5rem; position: relative; z-index: 10;">
@@ -238,9 +239,11 @@
   </div>
 </div>
 
+<!-- APP WRAPPER -->
 <div id="app-screen" style="display:none;">
   <div id="app-wrapper">
     
+    <!-- LEFT SIDEBAR -->
     <aside class="sidebar" id="main-sidebar">
       <div class="sidebar-header">
         <i class="ti ti-hexagon-letter-a" style="font-size: 28px; color: var(--accent-main); filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));"></i>
@@ -263,6 +266,7 @@
       </div>
     </aside>
 
+    <!-- RIGHT MAIN CONTENT -->
     <main class="main-area">
       <header class="top-header">
         <button class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
@@ -272,6 +276,7 @@
       <div class="content-scroll">
         <div class="container">
           
+          <!-- HOME / OVERVIEW SECTION -->
           <div class="section visible" id="s-home">
             <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">Welcome Back</h2>
             
@@ -314,6 +319,7 @@
             </div>
           </div>
 
+          <!-- HABITS SECTION -->
           <div class="section" id="s-habits">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
@@ -326,9 +332,11 @@
             </div>
           </div>
 
+          <!-- TO-DO SECTION -->
           <div class="section" id="s-todo">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Task Manager</h2>
             
+            <!-- Inline Custom Tag Manager -->
             <div class="card glass-panel" style="margin-bottom: 20px; padding: 1.25rem;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Tag Studio</h3>
@@ -391,6 +399,7 @@
             </div>
           </div>
 
+          <!-- TIMER SECTION -->
           <div class="section" id="s-timer">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Focus Timer</h2>
             <div class="card glass-panel" style="text-align: center; padding: 3rem 2rem;">
@@ -412,6 +421,7 @@
             </div>
           </div>
 
+          <!-- CALENDAR SECTION -->
           <div class="section" id="s-calendar">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Consistency Calendar</h2>
             <div class="card glass-panel" style="padding: 1.5rem;">
@@ -428,6 +438,7 @@
             </div>
           </div>
 
+          <!-- NOTES SECTION -->
           <div class="section" id="s-notes">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Notes & Documents</h2>
             <div class="card glass-panel">
@@ -471,6 +482,7 @@
             </div>
           </div>
 
+          <!-- CHAT SECTION -->
           <div class="section" id="s-chat">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">AI Assistant</h2>
             <div class="card glass-panel chat-wrap">
@@ -488,6 +500,7 @@
             </div>
           </div>
 
+          <!-- SETTINGS SECTION -->
           <div class="section" id="s-settings">
             <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px;">Settings & Preferences</h2>
             
@@ -513,10 +526,13 @@
             </div>
           </div>
 
-        </div> </div> </main>
+        </div> <!-- End Container -->
+      </div> <!-- End Content Scroll -->
+    </main>
   </div>
 </div>
 
+<!-- Google reCAPTCHA Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script type="module">
@@ -647,6 +663,12 @@ function todayKey() { return dateKey(new Date()); }
 
 function init() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  
+  // Highlight today's pill by default for convenience
+  const todayDow = new Date().getDay();
+  const todayPill = document.querySelector(`.day-pill[data-val="${todayDow}"]`);
+  if (todayPill) todayPill.classList.add('selected');
+
   sw('home');
   renderAll();
 }
