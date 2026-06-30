@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>My Dashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>window.__chartJsLoadFailed = false;</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onerror="window.__chartJsLoadFailed = true;"></script>
 <style>
   :root {
     --bg-base: #161616;
@@ -769,6 +770,12 @@ function init() {
   const todayPill = document.querySelector(`.day-pill[data-val="${todayDow}"]`);
   if (todayPill) todayPill.classList.add('selected');
   setupHomeChartResizeObserver();
+  // If the original Chart.js <script> tag already failed by this point, start
+  // recovery immediately rather than waiting for the 3-second polling window
+  // inside waitForHomeReadyAndRender to expire first.
+  if (window.__chartJsLoadFailed && typeof Chart === 'undefined') {
+    attemptChartJsRecovery();
+  }
   sw('home');
   renderHabits();
   renderTagManagement();
@@ -826,6 +833,44 @@ window.addEventListener('load', () => {
   }
 });
 
+let chartJsRecoveryStage = 0; // 0 = not started, 1 = tried jsdelivr retry, 2 = tried cdnjs fallback
+
+// If Chart.js failed to load (CDN hiccup, ad-blocker/network filter blocking
+// that specific domain, slow/flaky connection, etc.), this tries to recover by
+// loading it from a fresh script tag. Retrying the exact same URL/CDN that just
+// failed has a real chance of failing again for the same underlying reason, so
+// the second attempt deliberately switches to a different provider entirely
+// (cdnjs.cloudflare.com instead of cdn.jsdelivr.net) for a genuinely independent
+// retry path. Capped at two attempts total so a truly offline browser doesn't
+// loop forever.
+function attemptChartJsRecovery() {
+  if (typeof Chart !== 'undefined') { renderHomeOverview(); return; } // it actually loaded, nothing to recover
+  if (chartJsRecoveryStage >= 2) return; // both fallbacks already tried this session
+
+  chartJsRecoveryStage += 1;
+  const fallbackUrls = [
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js', // stage 1: retry original CDN once, in case it was a transient blip
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js' // stage 2: different domain entirely
+  ];
+  const url = fallbackUrls[chartJsRecoveryStage - 1];
+  if (!url) return;
+
+  const script = document.createElement('script');
+  script.src = url;
+  script.onload = () => {
+    if (typeof Chart !== 'undefined') {
+      window.__chartJsLoadFailed = false;
+      renderHomeOverview();
+    } else {
+      attemptChartJsRecovery(); // this attempt's script loaded but somehow didn't define Chart — try next stage
+    }
+  };
+  script.onerror = () => {
+    attemptChartJsRecovery(); // this attempt failed outright — try next stage
+  };
+  document.head.appendChild(script);
+}
+
 // Polls until Chart.js is loaded AND the habitChart canvas has real layout dimensions,
 // then renders. Uses getBoundingClientRect() (forces synchronous reflow, guaranteed-fresh
 // values) rather than offsetWidth/offsetHeight (can be cached in some browser engines).
@@ -842,8 +887,14 @@ function waitForHomeReadyAndRender(attemptsLeft) {
     if (homeResizeObserver) { homeResizeObserver.disconnect(); homeResizeObserver = null; }
   } else if (attemptsLeft > 0) {
     setTimeout(() => waitForHomeReadyAndRender(attemptsLeft - 1), 50);
+  } else if (typeof Chart === 'undefined') {
+    // After 3 seconds Chart.js still isn't defined at all — this is a genuine
+    // script-load failure, not just a layout timing issue. Trigger recovery
+    // instead of calling renderHomeOverview() blind, which would just throw.
+    attemptChartJsRecovery();
   } else {
-    // Last-resort attempt even if dimensions look off, so something renders rather than nothing
+    // Chart.js IS defined, dimensions just looked iffy — safe to render anyway
+    // so something shows rather than nothing.
     renderHomeOverview();
   }
 }
@@ -934,6 +985,18 @@ function renderHomeOverview() {
   document.getElementById('home-habit-stat').textContent = `${done}/${Math.max(habits.length,userSettings.dailyGoal)}`;
   document.getElementById('home-task-stat').textContent  = pending;
   document.getElementById('home-note-stat').textContent  = notes.length;
+
+  // GUARD: Chart.js can occasionally fail to load in time (slow/flaky CDN
+  // response), and the earlier code here used to assume it was always ready,
+  // which threw a silent ReferenceError and aborted the rest of this function —
+  // leaving the stat numbers above filled in but every chart and the mini
+  // calendar below completely blank. That exact symptom (titles + empty boxes)
+  // is what was happening intermittently. Now we detect it explicitly and
+  // recover instead of crashing.
+  if (typeof Chart === 'undefined') {
+    attemptChartJsRecovery();
+    return;
+  }
 
   Chart.defaults.color = '#A79E9C';
   Chart.defaults.font.family = "'Inter', sans-serif";
