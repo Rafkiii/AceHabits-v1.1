@@ -140,7 +140,7 @@
   /* CALENDAR */
   .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 12px; }
   .cal-head { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4px 0; font-weight: 600; }
-  .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 5px; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+  .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 5px 3px 9px; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
   .cal-cell:hover:not(.faded):not(.past) { border-color: var(--accent-main); background: rgba(181,136,99,0.12); }
   .cal-cell.past { cursor: default; opacity: 0.45; }
   .cal-cell.green { background: rgba(181,136,99,0.35); border-color: rgba(181,136,99,0.7); color: var(--accent-main); font-weight: 600; }
@@ -148,8 +148,11 @@
   .cal-cell.today { border-width: 2px; font-weight: 700; border-color: var(--text-primary); color: var(--text-primary); }
   .cal-cell.faded { opacity: .65; cursor: pointer; }
   .cal-cell.selected-day { outline: 2px solid var(--accent-main); outline-offset: 1px; background: rgba(181,136,99,0.2); color: var(--text-primary); font-weight: 700; box-shadow: 0 0 12px rgba(181,136,99,0.25); }
-  .cal-cell.has-event::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent-main); }
-  .cal-cell.green.has-event::after, .cal-cell.today.has-event::after { background: var(--text-primary); }
+  .cal-event-bar-row { position: absolute; bottom: 2px; left: 3px; right: 3px; display: flex; gap: 2px; height: 5px; }
+  .cal-event-bar-seg { flex: 1; border-radius: 3px; box-shadow: 0 0 4px rgba(0,0,0,0.3); min-width: 4px; }
+  .cal-day-num { line-height: 1; flex-shrink: 0; }
+  .cal-task-preview { font-size: 7.5px; line-height: 1.15; color: inherit; opacity: 0.85; margin-top: 2px; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; letter-spacing: -0.1px; }
+  .cal-task-count { font-size: 7.5px; line-height: 1.15; color: inherit; opacity: 0.7; margin-top: 1px; font-weight: 500; }
   .cal-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
   .cal-nav { background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer; color: var(--text-primary); font-size: 18px; padding: 4px 8px; border-radius: var(--radius-sm); transition: all 0.2s; }
   .cal-nav:hover { background: rgba(255,255,255,0.1); }
@@ -429,7 +432,17 @@
                   <div class="event-add-row">
                     <input type="color" id="event-color" class="event-color-picker" value="#B58863">
                     <input type="text" id="new-event-text" class="custom-input" placeholder="Event name..." style="flex:1;min-width:120px;" onkeydown="if(event.key==='Enter')addEvent()">
-                    <input type="time" id="new-event-time" class="custom-input" style="width:110px;">
+                  </div>
+                  <div class="event-add-row" style="margin-top:8px;">
+                    <span style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">Time (optional):</span>
+                    <select id="event-hour" class="custom-input" style="width:64px;padding:10px 8px;"></select>
+                    <span style="color:var(--text-muted);">:</span>
+                    <select id="event-minute" class="custom-input" style="width:64px;padding:10px 8px;"></select>
+                    <select id="event-ampm" class="custom-input" style="width:68px;padding:10px 8px;">
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                    <button class="sm-btn" onclick="clearEventTime()" style="margin-left:auto;">No time</button>
                     <button class="btn-primary" onclick="addEvent()"><i class="ti ti-plus"></i> Add</button>
                   </div>
                 </div>
@@ -532,7 +545,7 @@
 const _relay = (name, ...args) => { if(window['_m_'+name]) return window['_m_'+name](...args); console.warn(name+' not ready yet'); };
 ['login','signup','logout','sw','toggleSidebar','addHabit','delHabit','toggleDay',
  'toggleDayPill','addTodo','checkDaily','uncheckDaily','delDaily','checkWeekly',
- 'uncheckWeekly','delWeekly','calNav','selectCalDate','addEvent','delEvent',
+ 'uncheckWeekly','delWeekly','calNav','selectCalDate','addEvent','delEvent','clearEventTime',
  'setFolder','addFolder','newNote','openNote','moveNote','autoSave','delNote',
  'uploadMedia','clearAllData','updateDailyGoal','addCustomTag','deleteCustomTag',
  'applyTimerPreset','saveCustomTimer','deleteCustomTimer','toggleTimer','resetTimer',
@@ -595,6 +608,8 @@ let selectedCalDate = null;
 let chatHistory    = [];
 
 let habitChartInst = null, taskChartInst = null, monthlyLineChartInst = null;
+let homeChartsEverRendered = false;
+let homeResizeObserver = null;
 
 // Timer state
 let timerInt = null, timeLeft = 25*60, isTimerRunning = false;
@@ -623,7 +638,17 @@ onAuthStateChanged(auth, async (user) => {
       if (!d.customTags || d.customTags.length === 0) save();
     }
     document.getElementById('setting-daily-goal').value = userSettings.dailyGoal;
-    init();
+    // FIX: #app-screen starts as display:none in raw HTML, so #s-home (even though
+    // it has class="visible" in markup) has zero layout dimensions until the ancestor
+    // display:none is lifted here. A single requestAnimationFrame only guarantees we're
+    // in the *next* paint cycle, not that the browser has *finished* computing layout
+    // for a style change made moments earlier. The double-rAF pattern is the standard,
+    // battle-tested way to guarantee a style mutation has been fully painted: the first
+    // rAF callback runs before the upcoming paint, and by the time the *second* rAF
+    // fires, that paint has definitely completed.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { init(); });
+    });
   } else {
     currentUser = null;
     document.getElementById('auth-screen').style.display = 'flex';
@@ -675,9 +700,84 @@ function init() {
   const todayDow = new Date().getDay();
   const todayPill = document.querySelector(`.day-pill[data-val="${todayDow}"]`);
   if (todayPill) todayPill.classList.add('selected');
+  setupHomeChartResizeObserver();
   sw('home');
-  // Use a short timeout so the home section is fully painted before renderAll runs
-  setTimeout(() => { renderAll(); }, 50);
+  renderHabits();
+  renderTagManagement();
+  renderTagSelects();
+  renderTodo();
+  renderCal();
+  renderNotes();
+  renderTimerPresets();
+}
+
+// Bulletproof safety net: watches the habit chart's wrapper element directly via
+// ResizeObserver, which fires the instant that element transitions from zero to
+// real dimensions — regardless of WHY it was zero (ancestor display:none, CSS
+// animation, async auth timing, etc). This removes all guesswork about timing
+// and guarantees charts render the moment they're actually able to.
+function setupHomeChartResizeObserver() {
+  if (homeResizeObserver) return; // only set up once
+  const wrapper = document.querySelector('#s-home .chart-wrapper');
+  if (!wrapper || typeof ResizeObserver === 'undefined') return;
+  homeResizeObserver = new ResizeObserver((entries) => {
+    if (homeChartsEverRendered) return; // first successful render handled it; let Chart.js's own responsive:true take over from here
+    for (const entry of entries) {
+      const w = entry.contentRect.width, h = entry.contentRect.height;
+      if (w > 0 && h > 0) {
+        renderHomeOverview();
+        homeChartsEverRendered = true;
+        homeResizeObserver.disconnect();
+        homeResizeObserver = null;
+        break;
+      }
+    }
+  });
+  homeResizeObserver.observe(wrapper);
+}
+
+// Final independent safety net, decoupled entirely from the Firebase auth timing
+// chain: window 'load' only fires once EVERY resource (including the tabler-icons
+// webfont, which loads async via its own stylesheet) has finished loading and the
+// browser has settled into its true final layout. Web fonts swapping in after
+// initial paint is a documented cause of post-paint layout shifts, which could
+// leave an earlier-constructed chart holding a stale canvas bitmap size.
+window.addEventListener('load', () => {
+  // Guard: only act if auth has actually resolved and the user is logged in.
+  // If page 'load' fires before Firebase auth resolves (e.g. slow connection),
+  // #app-screen is still display:none and acting here would just recreate the
+  // original bug by rendering into a still-hidden canvas.
+  if (!currentUser) return;
+  const homeSection = document.getElementById('s-home');
+  if (homeSection && homeSection.classList.contains('visible')) {
+    if (habitChartInst) habitChartInst.resize();
+    if (taskChartInst) taskChartInst.resize();
+    if (monthlyLineChartInst) monthlyLineChartInst.resize();
+    // If charts somehow never got created at all, this also catches that case.
+    if (!habitChartInst) renderHomeOverview();
+  }
+});
+
+// Polls until Chart.js is loaded AND the habitChart canvas has real layout dimensions,
+// then renders. Uses getBoundingClientRect() (forces synchronous reflow, guaranteed-fresh
+// values) rather than offsetWidth/offsetHeight (can be cached in some browser engines).
+// Works alongside the ResizeObserver above as a belt-and-suspenders approach.
+function waitForHomeReadyAndRender(attemptsLeft) {
+  if (attemptsLeft === undefined) attemptsLeft = 60; // ~3s ceiling at 50ms intervals
+  const canvas = document.getElementById('habitChart');
+  let rect = { width: 0, height: 0 };
+  if (canvas) rect = canvas.getBoundingClientRect();
+  const ready = typeof Chart !== 'undefined' && canvas && rect.width > 0 && rect.height > 0;
+  if (ready) {
+    renderHomeOverview();
+    homeChartsEverRendered = true;
+    if (homeResizeObserver) { homeResizeObserver.disconnect(); homeResizeObserver = null; }
+  } else if (attemptsLeft > 0) {
+    setTimeout(() => waitForHomeReadyAndRender(attemptsLeft - 1), 50);
+  } else {
+    // Last-resort attempt even if dimensions look off, so something renders rather than nothing
+    renderHomeOverview();
+  }
 }
 
 function toggleSidebar() { document.getElementById('main-sidebar').classList.toggle('collapsed'); }
@@ -691,9 +791,8 @@ function sw(t) {
   });
   if (window.innerWidth < 800) document.getElementById('main-sidebar').classList.add('collapsed');
 
-  // FIX: charts need the canvas to be visible before rendering — use requestAnimationFrame
   if (t==='home') {
-    requestAnimationFrame(() => { requestAnimationFrame(() => { renderHomeOverview(); }); });
+    waitForHomeReadyAndRender();
   }
   if (t==='calendar') renderCal();
   if (t==='todo') { renderTagManagement(); renderTagSelects(); }
@@ -708,8 +807,12 @@ function renderAll() {
   renderCal();
   renderNotes();
   renderTimerPresets();
-  // renderHomeOverview is handled by sw('home') via requestAnimationFrame
-  // to ensure canvases are visible before Chart.js draws into them
+  // Only refresh charts if the home section is actually visible right now;
+  // otherwise sw('home') will trigger the readiness-checked render when the user opens it.
+  const homeSection = document.getElementById('s-home');
+  if (homeSection && homeSection.classList.contains('visible')) {
+    waitForHomeReadyAndRender();
+  }
 }
 
 // ---- SETTINGS ----
@@ -825,6 +928,22 @@ function renderHomeOverview() {
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} habit${c.raw!==1?'s':''}`}} }
     }
   });
+
+  // FIX: force multiple resize passes at staggered intervals after creation.
+  // A single requestAnimationFrame isn't always enough — web font loading
+  // (tabler-icons-webfont) and other async layout shifts can still be settling
+  // after the first paint frame, which can leave Chart.js holding a stale/zero
+  // canvas bitmap size from construction time. Rather than guess at one "correct"
+  // moment, we re-assert sizing at several points so at least one definitely
+  // lands after the browser has fully settled.
+  const forceChartResize = () => {
+    if (habitChartInst) habitChartInst.resize();
+    if (taskChartInst) taskChartInst.resize();
+    if (monthlyLineChartInst) monthlyLineChartInst.resize();
+  };
+  requestAnimationFrame(forceChartResize);
+  setTimeout(forceChartResize, 100);
+  setTimeout(forceChartResize, 350);
 
   renderHomeMiniCal();
 }
@@ -1080,11 +1199,42 @@ function renderCal() {
     if(hasEv) cls+=' has-event';
     if(selectedCalDate===dk) cls+=' selected-day';
 
+    // Build a tiny task preview for this specific day, pulling from dailyTodos
+    const dayTasks = dailyTodos[dk] || [];
+    let taskPreviewHTML = '';
+    if (dayTasks.length > 0) {
+      const pendingTasks = dayTasks.filter(t => !t.done);
+      const toShow = pendingTasks.length > 0 ? pendingTasks : dayTasks;
+      const first = toShow[0];
+      const firstLabel = first.text.length > 10 ? first.text.slice(0,9)+'…' : first.text;
+      if (toShow.length === 1) {
+        taskPreviewHTML = `<span class="cal-task-preview">${firstLabel}</span>`;
+      } else {
+        taskPreviewHTML = `<span class="cal-task-preview">${firstLabel}</span><span class="cal-task-count">+${toShow.length-1} more</span>`;
+      }
+    }
+
+    const dayNumHTML = `<span class="cal-day-num">${d}</span>`;
+    let eventBarHTML = '';
+    if (hasEv) {
+      const dayEvents = calEvents[dk];
+      // One colored segment per event (not just the first), so every event's
+      // chosen color actually shows up on the calendar grid. Capped at 5 segments
+      // to keep the row legible on days with many events.
+      const maxSegments = 5;
+      const segs = dayEvents.slice(0, maxSegments).map(ev => {
+        const c = ev.color || '#B58863';
+        return `<span class="cal-event-bar-seg" style="background:${c};"></span>`;
+      }).join('');
+      const titleText = dayEvents.map(ev => ev.text).join(', ');
+      eventBarHTML = `<span class="cal-event-bar-row" title="${titleText.replace(/"/g,'&quot;')}">${segs}</span>`;
+    }
+
     // Past dates: show dimmed with no click; today and future: clickable
     if(isPast) {
-      html+=`<div class="${cls}" title="Cannot add events to past dates">${d}</div>`;
+      html+=`<div class="${cls}" title="Cannot add events to past dates">${dayNumHTML}${taskPreviewHTML}${eventBarHTML}</div>`;
     } else {
-      html+=`<div class="${cls}" onclick="selectCalDate(${yr},${mo},${d})">${d}</div>`;
+      html+=`<div class="${cls}" onclick="selectCalDate(${yr},${mo},${d})">${dayNumHTML}${taskPreviewHTML}${eventBarHTML}</div>`;
     }
   }
   document.getElementById('cal-grid').innerHTML=html;
@@ -1109,6 +1259,27 @@ function clearEventPanel() {
   document.getElementById('event-select-prompt').style.display='block';
 }
 
+function populateEventTimeSelects() {
+  const hourSel = document.getElementById('event-hour');
+  const minSel = document.getElementById('event-minute');
+  if (hourSel.options.length === 0) {
+    let hOpts = '<option value="">--</option>';
+    for (let h=1; h<=12; h++) hOpts += `<option value="${h}">${h}</option>`;
+    hourSel.innerHTML = hOpts;
+  }
+  if (minSel.options.length === 0) {
+    let mOpts = '';
+    for (let m=0; m<60; m+=5) mOpts += `<option value="${m.toString().padStart(2,'0')}">${m.toString().padStart(2,'0')}</option>`;
+    minSel.innerHTML = mOpts;
+  }
+}
+
+function clearEventTime() {
+  document.getElementById('event-hour').value = '';
+  document.getElementById('event-minute').value = '00';
+  document.getElementById('event-ampm').value = 'AM';
+}
+
 function renderEventPanel() {
   if(!selectedCalDate){ clearEventPanel(); return; }
   const parts=selectedCalDate.split('-');
@@ -1117,6 +1288,7 @@ function renderEventPanel() {
   document.getElementById('event-date-key-display').textContent='';
   document.getElementById('event-select-prompt').style.display='none';
   document.getElementById('event-add-area').style.display='block';
+  populateEventTimeSelects();
 
   const events=calEvents[selectedCalDate]||[];
   const el=document.getElementById('event-list');
@@ -1137,12 +1309,15 @@ function addEvent() {
   if(isPastDate(parseInt(parts[0]),parseInt(parts[1]),parseInt(parts[2]))) return;
   const text=document.getElementById('new-event-text').value.trim();
   if(!text) return;
-  const time=document.getElementById('new-event-time').value;
+  const hour=document.getElementById('event-hour').value;
+  const minute=document.getElementById('event-minute').value;
+  const ampm=document.getElementById('event-ampm').value;
+  const time = hour ? `${hour}:${minute} ${ampm}` : '';
   const color=document.getElementById('event-color').value;
   if(!calEvents[selectedCalDate]) calEvents[selectedCalDate]=[];
   calEvents[selectedCalDate].push({text,time,color});
   document.getElementById('new-event-text').value='';
-  document.getElementById('new-event-time').value='';
+  clearEventTime();
   save(); renderCal(); renderEventPanel();
 }
 
@@ -1291,7 +1466,7 @@ window['_m_addHabit']=addHabit; window.addHabit=addHabit; window['_m_delHabit']=
 window['_m_toggleDayPill']=toggleDayPill; window.toggleDayPill=toggleDayPill; window['_m_addTodo']=addTodo; window.addTodo=addTodo;
 window['_m_checkDaily']=checkDaily; window.checkDaily=checkDaily; window['_m_uncheckDaily']=uncheckDaily; window.uncheckDaily=uncheckDaily; window['_m_delDaily']=delDaily; window.delDaily=delDaily;
 window['_m_checkWeekly']=checkWeekly; window.checkWeekly=checkWeekly; window['_m_uncheckWeekly']=uncheckWeekly; window.uncheckWeekly=uncheckWeekly; window['_m_delWeekly']=delWeekly; window.delWeekly=delWeekly;
-window['_m_calNav']=calNav; window.calNav=calNav; window['_m_selectCalDate']=selectCalDate; window.selectCalDate=selectCalDate; window['_m_addEvent']=addEvent; window.addEvent=addEvent; window['_m_delEvent']=delEvent; window.delEvent=delEvent;
+window['_m_calNav']=calNav; window.calNav=calNav; window['_m_selectCalDate']=selectCalDate; window.selectCalDate=selectCalDate; window['_m_addEvent']=addEvent; window.addEvent=addEvent; window['_m_delEvent']=delEvent; window.delEvent=delEvent; window['_m_clearEventTime']=clearEventTime; window.clearEventTime=clearEventTime;
 window['_m_setFolder']=setFolder; window.setFolder=setFolder; window['_m_addFolder']=addFolder; window.addFolder=addFolder;
 window['_m_newNote']=newNote; window.newNote=newNote; window['_m_openNote']=openNote; window.openNote=openNote; window['_m_moveNote']=moveNote; window.moveNote=moveNote;
 window['_m_autoSave']=autoSave; window.autoSave=autoSave; window['_m_delNote']=delNote; window.delNote=delNote; window['_m_uploadMedia']=uploadMedia; window.uploadMedia=uploadMedia;
