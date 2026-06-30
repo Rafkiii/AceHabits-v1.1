@@ -141,12 +141,13 @@
   .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 12px; }
   .cal-head { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4px 0; font-weight: 600; }
   .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 5px; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
-  .cal-cell:hover:not(.faded):not(.past) { border-color: var(--accent-main); background: rgba(181,136,99,0.06); }
+  .cal-cell:hover:not(.faded):not(.past) { border-color: var(--accent-main); background: rgba(181,136,99,0.12); }
   .cal-cell.past { cursor: default; opacity: 0.45; }
-  .cal-cell.green { background: rgba(181,136,99,0.1); border-color: rgba(181,136,99,0.3); color: var(--accent-main); }
-  .cal-cell.red { background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.2); color: var(--text-danger); }
-  .cal-cell.today { border-width: 1.5px; font-weight: 700; border-color: var(--text-primary); color: var(--text-primary); }
-  .cal-cell.faded { opacity: .2; cursor: default; }
+  .cal-cell.green { background: rgba(181,136,99,0.35); border-color: rgba(181,136,99,0.7); color: var(--accent-main); font-weight: 600; }
+  .cal-cell.red { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); color: var(--text-danger); font-weight: 600; }
+  .cal-cell.today { border-width: 2px; font-weight: 700; border-color: var(--text-primary); color: var(--text-primary); }
+  .cal-cell.faded { opacity: .65; cursor: pointer; }
+  .cal-cell.selected-day { outline: 2px solid var(--accent-main); outline-offset: 1px; background: rgba(181,136,99,0.2); color: var(--text-primary); font-weight: 700; box-shadow: 0 0 12px rgba(181,136,99,0.25); }
   .cal-cell.has-event::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent-main); }
   .cal-cell.green.has-event::after, .cal-cell.today.has-event::after { background: var(--text-primary); }
   .cal-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -675,7 +676,8 @@ function init() {
   const todayPill = document.querySelector(`.day-pill[data-val="${todayDow}"]`);
   if (todayPill) todayPill.classList.add('selected');
   sw('home');
-  renderAll();
+  // Use a short timeout so the home section is fully painted before renderAll runs
+  setTimeout(() => { renderAll(); }, 50);
 }
 
 function toggleSidebar() { document.getElementById('main-sidebar').classList.toggle('collapsed'); }
@@ -705,8 +707,9 @@ function renderAll() {
   renderTodo();
   renderCal();
   renderNotes();
-  renderHomeOverview();
   renderTimerPresets();
+  // renderHomeOverview is handled by sw('home') via requestAnimationFrame
+  // to ensure canvases are visible before Chart.js draws into them
 }
 
 // ---- SETTINGS ----
@@ -1075,6 +1078,7 @@ function renderCal() {
     if(!isFuture && dayDone>=GOAL) cls+=' green';
     else if(!isFuture && dayDone>=0&&dayDone<GOAL) cls+=' red';
     if(hasEv) cls+=' has-event';
+    if(selectedCalDate===dk) cls+=' selected-day';
 
     // Past dates: show dimmed with no click; today and future: clickable
     if(isPast) {
