@@ -51,12 +51,12 @@
   @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
   /* HOME */
-  .home-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+  .home-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+  .home-stats-col { display: flex; flex-direction: column; gap: 16px; }
+  .home-charts-col { display: flex; flex-direction: column; gap: 16px; }
+  @media (max-width:800px) { .home-layout { grid-template-columns: 1fr; } }
   .overview-card { background: var(--surface-glass); border: 1px solid var(--border-subtle); padding: 20px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
   .overview-card:hover { border-color: var(--accent-main); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(181,136,99,0.1); }
-  .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .monthly-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width:800px) { .chart-grid, .monthly-grid { grid-template-columns: 1fr; } .home-grid { grid-template-columns: 1fr; } }
   .chart-container { background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; }
   .chart-wrapper { position: relative; height: 220px; width: 100%; }
   .chart-wrapper-sm { position: relative; height: 180px; width: 100%; }
@@ -277,43 +277,43 @@
           <!-- HOME -->
           <div class="section visible" id="s-home">
             <h2 style="font-size:24px;font-weight:600;margin-bottom:20px;">Welcome Back</h2>
-            <div class="home-grid">
-              <div class="overview-card" onclick="sw('habits')">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-check" style="font-size:20px;color:var(--accent-main);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Habits ➔</span></div>
-                <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-habit-stat">0/5</div>
-                <div style="font-size:13px;color:var(--text-secondary);">Habits completed today</div>
+            <div class="home-layout">
+              <div class="home-stats-col">
+                <div class="overview-card" onclick="sw('habits')">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-check" style="font-size:20px;color:var(--accent-main);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Habits ➔</span></div>
+                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-habit-stat">0/5</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Habits completed today</div>
+                </div>
+                <div class="overview-card" onclick="sw('todo')">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-list-check" style="font-size:20px;color:var(--text-danger);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Tasks ➔</span></div>
+                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-task-stat">0</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Pending tasks today</div>
+                </div>
+                <div class="overview-card" onclick="sw('notes')">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-notes" style="font-size:20px;color:var(--text-success);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Notes ➔</span></div>
+                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-note-stat">0</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Total saved notes</div>
+                </div>
               </div>
-              <div class="overview-card" onclick="sw('todo')">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-list-check" style="font-size:20px;color:var(--text-danger);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Tasks ➔</span></div>
-                <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-task-stat">0</div>
-                <div style="font-size:13px;color:var(--text-secondary);">Pending tasks today</div>
-              </div>
-              <div class="overview-card" onclick="sw('notes')">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-notes" style="font-size:20px;color:var(--text-success);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Notes ➔</span></div>
-                <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-note-stat">0</div>
-                <div style="font-size:13px;color:var(--text-secondary);">Total saved notes</div>
-              </div>
-            </div>
-            <div class="chart-grid">
-              <div class="chart-container">
-                <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">7-Day Habit Performance</h3>
-                <div class="chart-wrapper"><canvas id="habitChart"></canvas></div>
-              </div>
-              <div class="chart-container">
-                <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">Today's Tasks</h3>
-                <div class="chart-wrapper"><canvas id="taskChart"></canvas></div>
-              </div>
-            </div>
-            <div class="monthly-grid">
-              <div class="chart-container">
-                <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Habit Trend</h3>
-                <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Habits completed per day this month</p>
-                <div class="chart-wrapper-sm"><canvas id="monthlyLineChart"></canvas></div>
-              </div>
-              <div class="chart-container">
-                <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Consistency</h3>
-                <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Goal met = <span style="color:var(--accent-main);">●</span> &nbsp; Below goal = <span style="color:var(--text-danger);">●</span></p>
-                <div class="mini-cal-grid" id="home-mini-cal"></div>
+              <div class="home-charts-col">
+                <div class="chart-container">
+                  <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">7-Day Habit Performance</h3>
+                  <div class="chart-wrapper"><canvas id="habitChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                  <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">Today's Tasks</h3>
+                  <div class="chart-wrapper"><canvas id="taskChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                  <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Habit Trend</h3>
+                  <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Habits completed per day this month</p>
+                  <div class="chart-wrapper-sm"><canvas id="monthlyLineChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                  <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Consistency</h3>
+                  <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Goal met = <span style="color:var(--accent-main);">●</span> &nbsp; Below goal = <span style="color:var(--text-danger);">●</span></p>
+                  <div class="mini-cal-grid" id="home-mini-cal"></div>
+                </div>
               </div>
             </div>
           </div>
