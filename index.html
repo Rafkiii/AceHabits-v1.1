@@ -112,6 +112,7 @@
   .todo-text { flex: 1; font-size: 14px; color: var(--text-primary); }
   .todo-text.done { text-decoration: line-through; color: var(--text-muted); }
   .todo-tag { font-size: 11px; padding: 3px 8px; border-radius: 100px; border: 1px solid var(--border-strong); white-space: nowrap; font-weight: 500; }
+  .todo-event-badge { font-size: 10.5px; padding: 3px 8px; border-radius: 100px; border: 1px solid; white-space: nowrap; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.2); }
   .week-day-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
   .section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
   .weekly-day-picker { display: flex; gap: 6px; }
@@ -637,6 +638,11 @@ onAuthStateChanged(auth, async (user) => {
       customTags = (d.customTags && d.customTags.length > 0) ? d.customTags : [...DEFAULT_TAGS];
       if (!d.customTags || d.customTags.length === 0) save();
     }
+    // One-time backfill: events added before calendar-to-todo linking existed
+    // won't have an eventLinkId, and won't have a matching daily todo. Create
+    // the missing link now so older events also show up on the to-do list.
+    const backfilled = backfillEventTodoLinks();
+    if (backfilled) save();
     document.getElementById('setting-daily-goal').value = userSettings.dailyGoal;
     // FIX: #app-screen starts as display:none in raw HTML, so #s-home (even though
     // it has class="visible" in markup) has zero layout dimensions until the ancestor
@@ -684,6 +690,68 @@ async function clearAllData() {
 // ---- HELPERS ----
 function dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 function todayKey()  { return dateKey(new Date()); }
+function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+
+// Converts an event's stored time string (e.g. "1:30 PM") into minutes-since-midnight
+// for sorting. All-day events (empty time string) sort to the end, after every
+// timed event, since they don't belong to a specific point in the day.
+function eventTimeToMinutes(timeStr) {
+  if (!timeStr) return Infinity;
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return Infinity;
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const ampm = match[3].toUpperCase();
+  if (ampm === 'PM' && hour !== 12) hour += 12;
+  if (ampm === 'AM' && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
+
+// Sorts a single date's event array in place by time of day (earliest first,
+// all-day events last). Called any time an event is added or removed so
+// calEvents[dateKey] is always already in chronological order — this keeps
+// index-based delete/edit operations correct, since storage order and display
+// order never diverge.
+function sortEventsForDate(dk) {
+  if (!calEvents[dk]) return;
+  calEvents[dk].sort((a, b) => eventTimeToMinutes(a.time) - eventTimeToMinutes(b.time));
+}
+
+// Retroactively links any calendar event that predates the calendar-to-todo
+// feature (i.e. has no eventLinkId yet) to a matching daily todo on the same
+// date. Mutates calEvents and dailyTodos directly. Returns true if anything
+// was actually changed, so the caller only triggers a save when needed.
+function backfillEventTodoLinks() {
+  let changed = false;
+  Object.keys(calEvents).forEach(dk => {
+    const events = calEvents[dk] || [];
+    let dateChanged = false;
+    events.forEach(ev => {
+      if (ev.eventLinkId) return; // already linked, nothing to do
+      const linkId = genId();
+      ev.eventLinkId = linkId;
+      if (!dailyTodos[dk]) dailyTodos[dk] = [];
+      // Avoid creating a duplicate if a matching todo with the same text already
+      // exists on that date from some other source — only add if nothing matches.
+      const alreadyHasMatch = dailyTodos[dk].some(t => t.text === ev.text && !t.eventLinkId);
+      if (!alreadyHasMatch) {
+        dailyTodos[dk].push({
+          id: genId(),
+          text: ev.text,
+          tag: '',
+          done: false,
+          eventLinkId: linkId,
+          eventTime: ev.time || '',
+          eventColor: ev.color || '#B58863'
+        });
+      }
+      changed = true;
+      dateChanged = true;
+    });
+    if (dateChanged) sortEventsForDate(dk);
+  });
+  return changed;
+}
 
 // Returns true if the given yr/mo/d is strictly before today (i.e. a past date)
 function isPastDate(yr, mo, d) {
@@ -1028,17 +1096,24 @@ function generateTagHTML(tagId) {
   return `<span class="todo-tag" style="color:${t.color};border-color:${t.color};background:transparent;">${t.name}</span>`;
 }
 
+function generateEventTimeBadge(t) {
+  if (!t.eventLinkId) return '';
+  const c = t.eventColor || 'var(--accent-main)';
+  const timeLabel = t.eventTime ? t.eventTime : 'All day';
+  return `<span class="todo-event-badge" style="border-color:${c};color:${c};" title="From your calendar"><i class="ti ti-calendar-event" style="font-size:10px;"></i> ${timeLabel}</span>`;
+}
+
 function renderTodo() {
   const tk=todayKey(), daily=dailyTodos[tk]||[];
   const pending=daily.filter(t=>!t.done), done=daily.filter(t=>t.done);
   document.getElementById('daily-count').textContent=`${done.length}/${daily.length} done`;
   const pel=document.getElementById('daily-pending');
   pel.innerHTML=pending.length
-    ? pending.map(t=>{ const ri=daily.indexOf(t); return `<div class="todo-item"><div class="todo-check" onclick="checkDaily('${tk}',${ri})"></div><span class="todo-text">${t.text}</span>${generateTagHTML(t.tag)}<button class="del-btn" onclick="delDaily('${tk}',${ri})"><i class="ti ti-x"></i></button></div>`; }).join('')
+    ? pending.map(t=>{ const ri=daily.indexOf(t); return `<div class="todo-item"><div class="todo-check" onclick="checkDaily('${tk}',${ri})"></div><span class="todo-text">${t.text}</span>${generateEventTimeBadge(t)}${generateTagHTML(t.tag)}<button class="del-btn" onclick="delDaily('${tk}',${ri})"><i class="ti ti-x"></i></button></div>`; }).join('')
     : '<div style="padding:16px 0;font-size:13px;color:var(--text-muted);text-align:center;">Inbox zero. No pending tasks.</div>';
   const del=document.getElementById('daily-done');
   del.innerHTML=done.length
-    ? done.map(t=>{ const ri=daily.indexOf(t); return `<div class="todo-item"><div class="todo-check done" style="cursor:pointer;" onclick="uncheckDaily('${tk}',${ri})" title="Click to uncheck"><i class="ti ti-check" style="font-size:12px;color:var(--bg-base);"></i></div><span class="todo-text done">${t.text}</span>${generateTagHTML(t.tag)}</div>`; }).join('')
+    ? done.map(t=>{ const ri=daily.indexOf(t); return `<div class="todo-item"><div class="todo-check done" style="cursor:pointer;" onclick="uncheckDaily('${tk}',${ri})" title="Click to uncheck"><i class="ti ti-check" style="font-size:12px;color:var(--bg-base);"></i></div><span class="todo-text done">${t.text}</span>${generateEventTimeBadge(t)}${generateTagHTML(t.tag)}</div>`; }).join('')
     : '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">Nothing completed yet.</div>';
   renderWeekly();
 }
@@ -1091,7 +1166,16 @@ function addTodo(type) {
 }
 function checkDaily(tk,idx) { dailyTodos[tk][idx].done=true;  save(); renderTodo(); renderHomeOverview(); }
 function uncheckDaily(tk,idx){ dailyTodos[tk][idx].done=false; save(); renderTodo(); renderHomeOverview(); }
-function delDaily(tk,idx)    { dailyTodos[tk].splice(idx,1);   save(); renderTodo(); renderHomeOverview(); }
+function delDaily(tk,idx)    {
+  const removed = dailyTodos[tk][idx];
+  dailyTodos[tk].splice(idx,1);
+  // If this todo was created from a calendar event, remove that event too so
+  // the calendar doesn't keep showing a task that no longer exists on the to-do list.
+  if (removed && removed.eventLinkId && calEvents[tk]) {
+    calEvents[tk] = calEvents[tk].filter(ev => ev.eventLinkId !== removed.eventLinkId);
+  }
+  save(); renderTodo(); renderHomeOverview(); renderCal();
+}
 function checkWeekly(idx)    { weeklyTodos[idx].done=true;  save(); renderWeekly(); }
 function uncheckWeekly(idx)  { weeklyTodos[idx].done=false; save(); renderWeekly(); }
 function delWeekly(idx)      { weeklyTodos.splice(idx,1);   save(); renderWeekly(); }
@@ -1315,16 +1399,41 @@ function addEvent() {
   const time = hour ? `${hour}:${minute} ${ampm}` : '';
   const color=document.getElementById('event-color').value;
   if(!calEvents[selectedCalDate]) calEvents[selectedCalDate]=[];
-  calEvents[selectedCalDate].push({text,time,color});
+
+  // Link this event to a daily todo on the same date, so it shows up on the
+  // to-do list for whichever day it's assigned to (today's tasks if added for
+  // today, or automatically once that future date's tab is viewed/arrives,
+  // since dailyTodos is already rendered per-date by key).
+  const eventLinkId = genId();
+  calEvents[selectedCalDate].push({text,time,color,eventLinkId});
+  sortEventsForDate(selectedCalDate);
+
+  if(!dailyTodos[selectedCalDate]) dailyTodos[selectedCalDate]=[];
+  dailyTodos[selectedCalDate].push({
+    id: genId(),
+    text,
+    tag: '',
+    done: false,
+    eventLinkId,
+    eventTime: time,
+    eventColor: color
+  });
+
   document.getElementById('new-event-text').value='';
   clearEventTime();
-  save(); renderCal(); renderEventPanel();
+  save(); renderCal(); renderEventPanel(); renderTodo(); renderHomeOverview();
 }
 
 function delEvent(i) {
   if(!selectedCalDate) return;
+  const removed = calEvents[selectedCalDate][i];
   calEvents[selectedCalDate].splice(i,1);
-  save(); renderCal(); renderEventPanel();
+  // Remove the linked todo too, so deleting an event doesn't leave an orphaned
+  // task behind on that day's to-do list.
+  if (removed && removed.eventLinkId && dailyTodos[selectedCalDate]) {
+    dailyTodos[selectedCalDate] = dailyTodos[selectedCalDate].filter(t => t.eventLinkId !== removed.eventLinkId);
+  }
+  save(); renderCal(); renderEventPanel(); renderTodo(); renderHomeOverview();
 }
 
 // ---- NOTES ----
