@@ -1,16 +1,10 @@
-<head>
-  <script src="https://www.google.com/recaptcha/enterprise.js?render=6LdJ8D4tAAAAACxICiehNUliGkEW5QU3tUeFjgSS"></script>
-  <!-- Your code -->
-</head>
-
-And this is my code give it back to me in full
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>My Dashboard</title>
+<script src="https://www.google.com/recaptcha/enterprise.js?render=6LdJ8D4tAAAAACxICiehNUliGkEW5QU3tUeFjgSS"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css"/>
 <script>window.__chartJsLoadFailed = false;</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onerror="window.__chartJsLoadFailed = true;"></script>
@@ -233,12 +227,10 @@ And this is my code give it back to me in full
 
   /* AUTH */
   .auth-bg { position: absolute; top:0; left:0; width:100vw; height:100vh; background: radial-gradient(circle at 50% 0%, rgba(181,136,99,0.1), transparent 50%); z-index:0; }
-  .g-recaptcha > div { margin: 0 auto; }
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="auth-screen" style="display:flex;height:100vh;align-items:center;justify-content:center;position:relative;">
   <div class="auth-bg"></div>
   <div class="card glass-panel" style="width:100%;max-width:400px;padding:3rem 2.5rem;position:relative;z-index:10;">
@@ -251,14 +243,12 @@ And this is my code give it back to me in full
       <input type="email" id="auth-email" placeholder="Email address" class="custom-input" style="width:100%;">
       <input type="password" id="auth-pass" placeholder="Password" class="custom-input" style="width:100%;">
     </div>
-    <div class="g-recaptcha" data-sitekey="6Lez2DotAAAAAErGp2Wqdre16ljBXDMzWttYrXaO" data-theme="dark" style="margin-bottom:20px;display:flex;justify-content:center;transform:scale(0.95);transform-origin:center;"></div>
     <button class="btn-primary" onclick="login()" style="width:100%;padding:12px;margin-bottom:12px;font-size:14px;">Log In</button>
-    <button class="sm-btn" onclick="signup()" style="width:100%;padding:12px;font-size:14px;background:rgba(255,255,255,0.05);">Create Account</button>
+    <button class="g-recaptcha sm-btn" data-sitekey="6LdJ8D4tAAAAACxICiehNUliGkEW5QU3tUeFjgSS" data-callback='signup' data-action='submit' style="width:100%;padding:12px;font-size:14px;background:rgba(255,255,255,0.05);">Create Account</button>
     <div id="auth-error" style="color:var(--text-danger);font-size:13px;margin-top:16px;text-align:center;min-height:20px;"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app-screen" style="display:none;">
   <div id="app-wrapper">
     <aside class="sidebar" id="main-sidebar">
@@ -285,7 +275,6 @@ And this is my code give it back to me in full
       <div class="content-scroll">
         <div class="container">
 
-          <!-- HOME -->
           <div class="section visible" id="s-home">
             <h2 style="font-size:24px;font-weight:600;">Welcome Back</h2>
             <div class="home-layout">
@@ -329,7 +318,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- HABITS -->
           <div class="section" id="s-habits">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
@@ -341,7 +329,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- TODO -->
           <div class="section" id="s-todo">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Task Manager</h2>
             <div class="card glass-panel" style="margin-bottom:20px;padding:1.25rem;">
@@ -394,7 +381,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- TIMER -->
           <div class="section" id="s-timer">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Focus Timer</h2>
             <div class="card glass-panel" style="padding:2rem 2rem 1.5rem;">
@@ -419,7 +405,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- CALENDAR -->
           <div class="section" id="s-calendar">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Consistency Calendar</h2>
             <div class="card glass-panel" style="padding:1.5rem;">
@@ -434,7 +419,6 @@ And this is my code give it back to me in full
                 <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:12px;height:12px;border-radius:3px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);display:inline-block;"></span>Below goal</span>
                 <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent-main);display:inline-block;"></span>Has event</span>
               </div>
-              <!-- Event panel -->
               <div class="event-panel">
                 <div class="event-panel-header">
                   <span class="event-date-title" id="event-date-title">Select a date to view or add events</span>
@@ -464,7 +448,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- NOTES -->
           <div class="section" id="s-notes">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Notes</h2>
             <div class="card glass-panel">
@@ -504,7 +487,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- CHAT -->
           <div class="section" id="s-chat">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">AI Assistant</h2>
             <div class="card glass-panel chat-wrap">
@@ -522,7 +504,6 @@ And this is my code give it back to me in full
             </div>
           </div>
 
-          <!-- SETTINGS -->
           <div class="section" id="s-settings">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Settings & Preferences</h2>
             <div class="card glass-panel">
@@ -551,7 +532,6 @@ And this is my code give it back to me in full
   </div>
 </div>
 
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 const _relay = (name, ...args) => { if(window['_m_'+name]) return window['_m_'+name](...args); console.warn(name+' not ready yet'); };
 ['login','signup','logout','sw','toggleSidebar','addHabit','delHabit','toggleDay',
@@ -663,12 +643,15 @@ async function login() {
   try { await signInWithEmailAndPassword(auth,e,p); document.getElementById('auth-error').textContent=''; }
   catch(err) { document.getElementById('auth-error').textContent=err.message; }
 }
-async function signup() {
-  if (grecaptcha.getResponse().length === 0) { document.getElementById('auth-error').textContent='Please verify you are human.'; return; }
+
+// Updated signup function to work with invisible reCAPTCHA
+async function signup(token) {
   const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
+  if (!e || !p) { document.getElementById('auth-error').textContent='Please enter email and password.'; return; }
   try { await createUserWithEmailAndPassword(auth,e,p); document.getElementById('auth-error').textContent=''; }
   catch(err) { document.getElementById('auth-error').textContent=err.message; }
 }
+
 async function logout() { await signOut(auth); }
 
 async function save() {
