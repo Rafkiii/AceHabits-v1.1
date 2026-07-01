@@ -639,9 +639,19 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function login() {
-  const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
-  try { await signInWithEmailAndPassword(auth,e,p); document.getElementById('auth-error').textContent=''; }
-  catch(err) { document.getElementById('auth-error').textContent=err.message; }
+  const e = document.getElementById('auth-email').value;
+  const p = document.getElementById('auth-pass').value;
+  
+  try { 
+    await signInWithEmailAndPassword(auth, e, p); 
+    document.getElementById('auth-error').textContent = ''; 
+  } catch(err) { 
+    if (err.code === 'auth/invalid-credential') {
+      document.getElementById('auth-error').textContent = 'Incorrect email or password.';
+    } else {
+      document.getElementById('auth-error').textContent = err.message; 
+    }
+  }
 }
 
 // Updated signup function to work with invisible reCAPTCHA
@@ -1325,216 +1335,4 @@ function clearEventTime() {
 }
 
 function renderEventPanel() {
-  if(!selectedCalDate){ clearEventPanel(); return; }
-  const parts=selectedCalDate.split('-');
-  const label=new Date(parseInt(parts[0]),parseInt(parts[1]),parseInt(parts[2])).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  document.getElementById('event-date-title').textContent=label;
-  document.getElementById('event-date-key-display').textContent='';
-  document.getElementById('event-select-prompt').style.display='none';
-  document.getElementById('event-add-area').style.display='block';
-  populateEventTimeSelects();
-
-  const events=calEvents[selectedCalDate]||[];
-  const el=document.getElementById('event-list');
-  if(!events.length){ el.innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:6px 0;">No events — add one below.</div>'; return; }
-  el.innerHTML=events.map((ev,i)=>`
-    <div class="event-item">
-      <div class="event-dot" style="background:${ev.color||'var(--accent-main)'}"></div>
-      <span class="event-text">${ev.text}</span>
-      ${ev.time?`<span class="event-time">${ev.time}</span>`:''}
-      <button class="del-btn" onclick="delEvent(${i})"><i class="ti ti-x"></i></button>
-    </div>`).join('');
-}
-
-function addEvent() {
-  if(!selectedCalDate) return;
-  const parts=selectedCalDate.split('-');
-  if(isPastDate(parseInt(parts[0]),parseInt(parts[1]),parseInt(parts[2]))) return;
-  const text=document.getElementById('new-event-text').value.trim();
-  if(!text) return;
-  const hour=document.getElementById('event-hour').value;
-  const minute=document.getElementById('event-minute').value;
-  const ampm=document.getElementById('event-ampm').value;
-  const time = hour ? `${hour}:${minute} ${ampm}` : '';
-  const color=document.getElementById('event-color').value;
-  if(!calEvents[selectedCalDate]) calEvents[selectedCalDate]=[];
-
-  const eventLinkId = genId();
-  calEvents[selectedCalDate].push({text,time,color,eventLinkId});
-  sortEventsForDate(selectedCalDate);
-
-  if(!dailyTodos[selectedCalDate]) dailyTodos[selectedCalDate]=[];
-  dailyTodos[selectedCalDate].push({
-    id: genId(),
-    text,
-    tag: '',
-    done: false,
-    eventLinkId,
-    eventTime: time,
-    eventColor: color
-  });
-
-  document.getElementById('new-event-text').value='';
-  clearEventTime();
-  save(); renderCal(); renderEventPanel(); renderTodo(); renderHomeOverview();
-}
-
-function delEvent(i) {
-  if(!selectedCalDate) return;
-  const removed = calEvents[selectedCalDate][i];
-  calEvents[selectedCalDate].splice(i,1);
-  if (removed && removed.eventLinkId && dailyTodos[selectedCalDate]) {
-    dailyTodos[selectedCalDate] = dailyTodos[selectedCalDate].filter(t => t.eventLinkId !== removed.eventLinkId);
-  }
-  save(); renderCal(); renderEventPanel(); renderTodo(); renderHomeOverview();
-}
-
-function renderFolders() {
-  document.getElementById('folder-list').innerHTML=folders.map(f=>`
-    <div class="folder-item${f===activeFolder?' active':''}" onclick="setFolder('${f}')">
-      <span><i class="ti ti-folder" style="font-size:14px;margin-right:8px;opacity:0.8;"></i>${f}</span>
-      <span class="folder-count">${notes.filter(n=>n.folder===f).length}</span>
-    </div>`).join('');
-  const sel=document.getElementById('note-folder-sel');
-  if(sel) sel.innerHTML=folders.map(f=>`<option value="${f}"${f===activeFolder?' selected':''}>${f}</option>`).join('');
-}
-function setFolder(f) {
-  activeFolder=f; activeNote=null;
-  document.getElementById('note-editor').style.display='none';
-  document.getElementById('note-placeholder').style.display='flex';
-  document.getElementById('del-note-btn').style.display='none';
-  renderNotes();
-}
-function addFolder() {
-  const name=document.getElementById('new-folder-inp').value.trim();
-  if(!name||folders.includes(name)) return;
-  folders.push(name); document.getElementById('new-folder-inp').value='';
-  save(); renderNotes();
-}
-function renderNoteList() {
-  const el=document.getElementById('note-list');
-  const fn=notes.map((n,i)=>({n,i})).filter(({n})=>n.folder===activeFolder);
-  if(!fn.length){ el.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:10px;text-align:center;">Folder is empty.</div>'; return; }
-  el.innerHTML=fn.map(({n,i})=>`
-    <div class="note-item${activeNote===i?' active':''}" onclick="openNote(${i})">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div class="note-item-title">${n.title||'Untitled Note'}</div>
-        <div style="font-size:10px;color:var(--text-muted);">${n.assignedDate||''}</div>
-      </div>
-      <div class="note-item-preview">Click to view...</div>
-    </div>`).join('');
-}
-function renderNotes() { renderFolders(); renderNoteList(); }
-function newNote() {
-  const ts=new Date().toISOString().split('T')[0];
-  notes.unshift({title:'',body:'',folder:activeFolder,assignedDate:ts,created:Date.now()});
-  activeNote=0; save(); renderNotes(); renderHomeOverview(); openNote(0);
-}
-function openNote(i) {
-  activeNote=i;
-  document.getElementById('note-editor').style.display='flex';
-  document.getElementById('note-placeholder').style.display='none';
-  document.getElementById('del-note-btn').style.display='';
-  document.getElementById('note-title').value=notes[i].title||'';
-  document.getElementById('note-body').innerHTML=notes[i].body||'';
-  document.getElementById('note-folder-sel').value=notes[i].folder||activeFolder;
-  document.getElementById('note-date').value=notes[i].assignedDate||'';
-  document.getElementById('save-ind').textContent='';
-  renderNoteList();
-}
-function moveNote() {
-  if(activeNote===null) return;
-  notes[activeNote].folder=document.getElementById('note-folder-sel').value;
-  save(); renderNotes();
-}
-function autoSave() {
-  if(activeNote===null) return;
-  notes[activeNote].title=document.getElementById('note-title').value;
-  notes[activeNote].body=document.getElementById('note-body').innerHTML;
-  notes[activeNote].assignedDate=document.getElementById('note-date').value;
-  document.getElementById('save-ind').innerHTML='<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;display:inline-block;"></i> Saving...';
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{ save(); renderNoteList(); renderFolders(); document.getElementById('save-ind').innerHTML='<i class="ti ti-check"></i> Saved'; setTimeout(()=>document.getElementById('save-ind').textContent='',1500); },600);
-}
-function delNote() {
-  if(activeNote===null) return;
-  notes.splice(activeNote,1); activeNote=null;
-  document.getElementById('note-editor').style.display='none';
-  document.getElementById('note-placeholder').style.display='flex';
-  document.getElementById('del-note-btn').style.display='none';
-  save(); renderNotes(); renderHomeOverview();
-}
-async function uploadMedia(type) {
-  if(activeNote===null) return;
-  const input=document.createElement('input'); input.type='file'; input.accept=type==='image'?'image/*':'video/*';
-  input.onchange=async(e)=>{
-    const file=e.target.files[0]; if(!file) return;
-    document.getElementById('save-ind').innerHTML='<i class="ti ti-loader-2" style="animation:spin 1s linear infinite;display:inline-block;"></i> Uploading...';
-    try {
-      const sRef=ref(storage,`notes_media/${currentUser}/${Date.now()}_${file.name}`);
-      await uploadBytes(sRef,file); const url=await getDownloadURL(sRef);
-      const ed=document.getElementById('note-body'); ed.focus();
-      document.execCommand('insertHTML',false,type==='image'?`<br><img src="${url}" style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.1);margin:10px 0;" /><br>`:`<br><video src="${url}" controls style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.1);margin:10px 0;"></video><br>`);
-      autoSave();
-    } catch(err){ console.error(err); alert('Media upload failed.'); document.getElementById('save-ind').textContent=''; }
-  };
-  input.click();
-}
-
-function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
-function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); } }
-function buildContext() {
-  const dow=new Date().getDay();
-  const done=habits.filter(h=>(h.checks||[])[dow]).map(h=>h.name);
-  const pending=(dailyTodos[todayKey()]||[]).filter(t=>!t.done).map(t=>t.text);
-  return `Dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length?done.join(', '):'none'}. Daily goal: ${userSettings.dailyGoal}. Pending tasks: ${pending.length?pending.join(', '):'none'}. Total habits: ${habits.length}. Notes: ${notes.length}.`;
-}
-function appendMsg(role,text) {
-  const msgs=document.getElementById('chat-messages');
-  const w=msgs.querySelector('.chat-welcome'); if(w) w.remove();
-  const div=document.createElement('div'); div.className=`msg ${role==='user'?'user':'ai'}`;
-  div.innerHTML=`<div class="msg-avatar">${role==='user'?'<i class="ti ti-user"></i>':'<i class="ti ti-sparkles"></i>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
-  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
-}
-function showTyping() {
-  const msgs=document.getElementById('chat-messages');
-  const div=document.createElement('div'); div.className='msg ai'; div.id='typing-indicator';
-  div.innerHTML=`<div class="msg-avatar"><i class="ti ti-sparkles"></i></div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
-  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
-}
-function removeTyping() { const t=document.getElementById('typing-indicator'); if(t) t.remove(); }
-async function sendMsg() {
-  const inp=document.getElementById('chat-input'), text=inp.value.trim();
-  if(!text) return;
-  inp.value=''; inp.style.height='auto';
-  document.getElementById('send-btn').disabled=true;
-  appendMsg('user',text); chatHistory.push({role:'user',content:text}); showTyping();
-  try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:buildContext()+'\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical.', messages:chatHistory }) });
-    const data=await res.json(); removeTyping();
-    const reply=data.content&&data.content[0]?data.content[0].text:'Sorry, something went wrong.';
-    appendMsg('ai',reply); chatHistory.push({role:'assistant',content:reply});
-  } catch(e){ removeTyping(); appendMsg('ai','Something went wrong — please try again.'); }
-  document.getElementById('send-btn').disabled=false;
-}
-
-window['_m_login']=login; window.login=login; window['_m_signup']=signup; window.signup=signup; window['_m_logout']=logout; window.logout=logout;
-window['_m_sw']=sw; window.sw=sw; window['_m_toggleSidebar']=toggleSidebar; window.toggleSidebar=toggleSidebar;
-window['_m_addHabit']=addHabit; window.addHabit=addHabit; window['_m_delHabit']=delHabit; window.delHabit=delHabit; window['_m_toggleDay']=toggleDay; window.toggleDay=toggleDay;
-window['_m_toggleDayPill']=toggleDayPill; window.toggleDayPill=toggleDayPill; window['_m_addTodo']=addTodo; window.addTodo=addTodo;
-window['_m_checkDaily']=checkDaily; window.checkDaily=checkDaily; window['_m_uncheckDaily']=uncheckDaily; window.uncheckDaily=uncheckDaily; window['_m_delDaily']=delDaily; window.delDaily=delDaily;
-window['_m_checkWeekly']=checkWeekly; window.checkWeekly=checkWeekly; window['_m_uncheckWeekly']=uncheckWeekly; window.uncheckWeekly=uncheckWeekly; window['_m_delWeekly']=delWeekly; window.delWeekly=delWeekly;
-window['_m_calNav']=calNav; window.calNav=calNav; window['_m_selectCalDate']=selectCalDate; window.selectCalDate=selectCalDate; window['_m_addEvent']=addEvent; window.addEvent=addEvent; window['_m_delEvent']=delEvent; window.delEvent=delEvent; window['_m_clearEventTime']=clearEventTime; window.clearEventTime=clearEventTime;
-window['_m_setFolder']=setFolder; window.setFolder=setFolder; window['_m_addFolder']=addFolder; window.addFolder=addFolder;
-window['_m_newNote']=newNote; window.newNote=newNote; window['_m_openNote']=openNote; window.openNote=openNote; window['_m_moveNote']=moveNote; window.moveNote=moveNote;
-window['_m_autoSave']=autoSave; window.autoSave=autoSave; window['_m_delNote']=delNote; window.delNote=delNote; window['_m_uploadMedia']=uploadMedia; window.uploadMedia=uploadMedia;
-window['_m_clearAllData']=clearAllData; window.clearAllData=clearAllData; window['_m_updateDailyGoal']=updateDailyGoal; window.updateDailyGoal=updateDailyGoal;
-window['_m_addCustomTag']=addCustomTag; window.addCustomTag=addCustomTag; window['_m_deleteCustomTag']=deleteCustomTag; window.deleteCustomTag=deleteCustomTag;
-window['_m_applyTimerPreset']=applyTimerPreset; window.applyTimerPreset=applyTimerPreset; window['_m_saveCustomTimer']=saveCustomTimer; window.saveCustomTimer=saveCustomTimer;
-window['_m_deleteCustomTimer']=deleteCustomTimer; window.deleteCustomTimer=deleteCustomTimer; window['_m_toggleTimer']=toggleTimer; window.toggleTimer=toggleTimer;
-window['_m_resetTimer']=resetTimer; window.resetTimer=resetTimer; window['_m_autoResize']=autoResize; window.autoResize=autoResize; window['_m_handleKey']=handleKey; window.handleKey=handleKey;
-window['_m_sendMsg']=sendMsg; window.sendMsg=sendMsg;
-</script>
-</body>
-</html>
+  if(!selectedCalDate){ clearEventPanel(); return
