@@ -44,17 +44,36 @@
   .top-header { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border-subtle); background: rgba(22,22,22,0.8); backdrop-filter: blur(10px); z-index: 40; flex-shrink: 0; }
   .toggle-btn { background: transparent; border: 1px solid var(--border-strong); color: var(--text-primary); width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
   .toggle-btn:hover { background: rgba(255,255,255,0.05); }
-  .content-scroll { flex: 1; overflow-y: auto; padding: 30px; }
+  .content-scroll { flex: 1; overflow-y: auto; padding: 16px 24px; scroll-behavior: smooth; }
   .container { max-width: 900px; margin: 0 auto; }
   .section { display: none; }
   .section.visible { display: block; animation: fadeIn 0.3s ease forwards; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-  /* HOME */
-  .home-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
-  .home-stats-col { display: flex; flex-direction: column; gap: 16px; }
-  .home-charts-col { display: flex; flex-direction: column; gap: 16px; }
-  @media (max-width:800px) { .home-layout { grid-template-columns: 1fr; } }
+  /* HOME — no-scroll layout */
+  #s-home { height: calc(100vh - 70px - 32px); display: flex; flex-direction: column; }
+  .home-layout { flex: 1; display: grid; grid-template-columns: 180px 1fr; gap: 12px; min-height: 0; }
+  .home-stats-col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .home-stats-col .overview-card { flex: 1; padding: 12px 14px; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+  .home-stats-col .overview-card .stat-num { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+  .home-charts-col { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 0; }
+  .home-charts-col .chart-container { display: flex; flex-direction: column; min-height: 0; padding: 10px 14px; }
+  
+  /* Fluid chart resizing to fit the screen without scrolling */
+  .home-charts-col .chart-wrapper,
+  .home-charts-col .chart-wrapper-sm { flex: 1; min-height: 0; height: 100%; position: relative; }
+  
+  .home-charts-col .mini-cal-grid-wrap { flex: 1; min-height: 0; overflow: hidden; display: flex; align-items: center; }
+  .home-charts-col .mini-cal-grid-wrap .mini-cal-grid { width: 100%; }
+  
+  /* Mobile fallback: Allow scrolling when screen is too small to fit the grid */
+  @media (max-width:800px) { 
+    #s-home { height: auto; } 
+    .home-layout { grid-template-columns: 1fr; } 
+    .home-charts-col { grid-template-columns: 1fr; grid-template-rows: auto; } 
+    .home-charts-col .chart-wrapper, .home-charts-col .chart-wrapper-sm { height: 200px; flex: none; }
+  }
+  
   .overview-card { background: var(--surface-glass); border: 1px solid var(--border-subtle); padding: 20px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
   .overview-card:hover { border-color: var(--accent-main); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(181,136,99,0.1); }
   .chart-container { background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; }
@@ -272,53 +291,52 @@
         <span id="today-date" style="font-size:13px;color:var(--text-secondary);font-weight:500;"></span>
       </header>
       <div class="content-scroll">
-        <div class="container">
 
-          <!-- HOME -->
+          <!-- HOME — lives outside .container so it uses full width -->
           <div class="section visible" id="s-home">
-            <h2 style="font-size:24px;font-weight:600;margin-bottom:20px;">Welcome Back</h2>
+            <h2 style="font-size:20px;font-weight:600;margin-bottom:12px;">Welcome Back</h2>
             <div class="home-layout">
               <div class="home-stats-col">
                 <div class="overview-card" onclick="sw('habits')">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-check" style="font-size:20px;color:var(--accent-main);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Habits ➔</span></div>
-                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-habit-stat">0/5</div>
-                  <div style="font-size:13px;color:var(--text-secondary);">Habits completed today</div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><i class="ti ti-check" style="font-size:18px;color:var(--accent-main);"></i><span style="font-size:11px;color:var(--text-secondary);">Habits ➔</span></div>
+                  <div class="stat-num" id="home-habit-stat">0/5</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Completed today</div>
                 </div>
                 <div class="overview-card" onclick="sw('todo')">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-list-check" style="font-size:20px;color:var(--text-danger);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Tasks ➔</span></div>
-                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-task-stat">0</div>
-                  <div style="font-size:13px;color:var(--text-secondary);">Pending tasks today</div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><i class="ti ti-list-check" style="font-size:18px;color:var(--text-danger);"></i><span style="font-size:11px;color:var(--text-secondary);">Tasks ➔</span></div>
+                  <div class="stat-num" id="home-task-stat">0</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Pending today</div>
                 </div>
                 <div class="overview-card" onclick="sw('notes')">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><i class="ti ti-notes" style="font-size:20px;color:var(--text-success);"></i><span style="font-size:12px;color:var(--text-secondary);">Go to Notes ➔</span></div>
-                  <div style="font-size:28px;font-weight:700;margin-bottom:4px;" id="home-note-stat">0</div>
-                  <div style="font-size:13px;color:var(--text-secondary);">Total saved notes</div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><i class="ti ti-notes" style="font-size:18px;color:var(--text-success);"></i><span style="font-size:11px;color:var(--text-secondary);">Notes ➔</span></div>
+                  <div class="stat-num" id="home-note-stat">0</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Total saved</div>
                 </div>
               </div>
               <div class="home-charts-col">
                 <div class="chart-container">
-                  <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">7-Day Habit Performance</h3>
+                  <h3 style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text-secondary);">7-Day Habits</h3>
                   <div class="chart-wrapper"><canvas id="habitChart"></canvas></div>
                 </div>
                 <div class="chart-container">
-                  <h3 style="font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text-secondary);">Today's Tasks</h3>
+                  <h3 style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text-secondary);">Today's Tasks</h3>
                   <div class="chart-wrapper"><canvas id="taskChart"></canvas></div>
                 </div>
                 <div class="chart-container">
-                  <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Habit Trend</h3>
-                  <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Habits completed per day this month</p>
+                  <h3 style="font-size:13px;font-weight:500;margin-bottom:2px;color:var(--text-secondary);">Monthly Trend</h3>
+                  <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Habits per day this month</p>
                   <div class="chart-wrapper-sm"><canvas id="monthlyLineChart"></canvas></div>
                 </div>
                 <div class="chart-container">
-                  <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">Monthly Consistency</h3>
-                  <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Goal met = <span style="color:var(--accent-main);">●</span> &nbsp; Below goal = <span style="color:var(--text-danger);">●</span></p>
-                  <div class="mini-cal-grid" id="home-mini-cal"></div>
+                  <h3 style="font-size:13px;font-weight:500;margin-bottom:2px;color:var(--text-secondary);">Monthly Consistency</h3>
+                  <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Goal met = <span style="color:var(--accent-main);">●</span> &nbsp; Below = <span style="color:var(--text-danger);">●</span></p>
+                  <div class="mini-cal-grid-wrap"><div class="mini-cal-grid" id="home-mini-cal"></div></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- HABITS -->
+        <div class="container">
           <div class="section" id="s-habits">
             <h2 style="font-size:22px;font-weight:600;margin-bottom:20px;">Daily Habits</h2>
             <div class="stats-row" id="stats-row"></div>
@@ -506,6 +524,7 @@
               </div>
               <div class="chat-input-row">
                 <textarea class="chat-input" id="chat-input" placeholder="Message Claude..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="sm-btn" id="mic-btn" onclick="startListening()" style="padding:12px; height: 100%; border-color: var(--accent-main); color: var(--accent-main);"><i class="ti ti-microphone" style="font-size:16px;"></i></button>
                 <button class="btn-primary" id="send-btn" onclick="sendMsg()" style="padding:12px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-send" style="font-size:16px;"></i></button>
               </div>
             </div>
@@ -543,7 +562,6 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 // Relay shim: these stubs are replaced once the module loads.
-// They prevent "not defined" errors on early clicks.
 const _relay = (name, ...args) => { if(window['_m_'+name]) return window['_m_'+name](...args); console.warn(name+' not ready yet'); };
 ['login','signup','logout','sw','toggleSidebar','addHabit','delHabit','toggleDay',
  'toggleDayPill','addTodo','checkDaily','uncheckDaily','delDaily','checkWeekly',
@@ -551,7 +569,7 @@ const _relay = (name, ...args) => { if(window['_m_'+name]) return window['_m_'+n
  'setFolder','addFolder','newNote','openNote','moveNote','autoSave','delNote',
  'uploadMedia','clearAllData','updateDailyGoal','addCustomTag','deleteCustomTag',
  'applyTimerPreset','saveCustomTimer','deleteCustomTimer','toggleTimer','resetTimer',
- 'autoResize','handleKey','sendMsg'].forEach(fn => {
+ 'autoResize','handleKey','sendMsg','startListening'].forEach(fn => {
   window[fn] = (...args) => _relay(fn, ...args);
 });
 </script>
@@ -578,7 +596,6 @@ const storage = getStorage(app);
 
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-// ---- DEFAULT PRESETS ----
 const BUILTIN_TIMERS = [
   { id:'focus', name:'Focus', mins:25 },
   { id:'short', name:'Short Break', mins:5 },
@@ -594,7 +611,6 @@ const DEFAULT_TAGS = [
   { id:'tag_health',   name:'Health',   color:'#56d364' }
 ];
 
-// ---- STATE ----
 let currentUser = null;
 let userSettings   = { dailyGoal: 5 };
 let customTags     = [...DEFAULT_TAGS];
@@ -613,11 +629,9 @@ let habitChartInst = null, taskChartInst = null, monthlyLineChartInst = null;
 let homeChartsEverRendered = false;
 let homeResizeObserver = null;
 
-// Timer state
 let timerInt = null, timeLeft = 25*60, isTimerRunning = false;
 let currentTimerMins = 25, currentTimerName = 'Focus';
 
-// ---- FIREBASE AUTH ----
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user.uid;
@@ -639,23 +653,10 @@ onAuthStateChanged(auth, async (user) => {
       customTags = (d.customTags && d.customTags.length > 0) ? d.customTags : [...DEFAULT_TAGS];
       if (!d.customTags || d.customTags.length === 0) save();
     }
-    // One-time backfill: events added before calendar-to-todo linking existed
-    // won't have an eventLinkId, and won't have a matching daily todo. Create
-    // the missing link now so older events also show up on the to-do list.
     const backfilled = backfillEventTodoLinks();
     if (backfilled) save();
     document.getElementById('setting-daily-goal').value = userSettings.dailyGoal;
-    // FIX: #app-screen starts as display:none in raw HTML, so #s-home (even though
-    // it has class="visible" in markup) has zero layout dimensions until the ancestor
-    // display:none is lifted here. A single requestAnimationFrame only guarantees we're
-    // in the *next* paint cycle, not that the browser has *finished* computing layout
-    // for a style change made moments earlier. The double-rAF pattern is the standard,
-    // battle-tested way to guarantee a style mutation has been fully painted: the first
-    // rAF callback runs before the upcoming paint, and by the time the *second* rAF
-    // fires, that paint has definitely completed.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => { init(); });
-    });
+    requestAnimationFrame(() => { requestAnimationFrame(() => { init(); }); });
   } else {
     currentUser = null;
     document.getElementById('auth-screen').style.display = 'flex';
@@ -688,14 +689,10 @@ async function clearAllData() {
   await save(); renderAll(); alert('Cloud data successfully wiped.');
 }
 
-// ---- HELPERS ----
 function dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 function todayKey()  { return dateKey(new Date()); }
 function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 
-// Converts an event's stored time string (e.g. "1:30 PM") into minutes-since-midnight
-// for sorting. All-day events (empty time string) sort to the end, after every
-// timed event, since they don't belong to a specific point in the day.
 function eventTimeToMinutes(timeStr) {
   if (!timeStr) return Infinity;
   const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -708,53 +705,32 @@ function eventTimeToMinutes(timeStr) {
   return hour * 60 + minute;
 }
 
-// Sorts a single date's event array in place by time of day (earliest first,
-// all-day events last). Called any time an event is added or removed so
-// calEvents[dateKey] is always already in chronological order — this keeps
-// index-based delete/edit operations correct, since storage order and display
-// order never diverge.
 function sortEventsForDate(dk) {
   if (!calEvents[dk]) return;
   calEvents[dk].sort((a, b) => eventTimeToMinutes(a.time) - eventTimeToMinutes(b.time));
 }
 
-// Retroactively links any calendar event that predates the calendar-to-todo
-// feature (i.e. has no eventLinkId yet) to a matching daily todo on the same
-// date. Mutates calEvents and dailyTodos directly. Returns true if anything
-// was actually changed, so the caller only triggers a save when needed.
 function backfillEventTodoLinks() {
   let changed = false;
   Object.keys(calEvents).forEach(dk => {
     const events = calEvents[dk] || [];
     let dateChanged = false;
     events.forEach(ev => {
-      if (ev.eventLinkId) return; // already linked, nothing to do
+      if (ev.eventLinkId) return;
       const linkId = genId();
       ev.eventLinkId = linkId;
       if (!dailyTodos[dk]) dailyTodos[dk] = [];
-      // Avoid creating a duplicate if a matching todo with the same text already
-      // exists on that date from some other source — only add if nothing matches.
       const alreadyHasMatch = dailyTodos[dk].some(t => t.text === ev.text && !t.eventLinkId);
       if (!alreadyHasMatch) {
-        dailyTodos[dk].push({
-          id: genId(),
-          text: ev.text,
-          tag: '',
-          done: false,
-          eventLinkId: linkId,
-          eventTime: ev.time || '',
-          eventColor: ev.color || '#B58863'
-        });
+        dailyTodos[dk].push({ id: genId(), text: ev.text, tag: '', done: false, eventLinkId: linkId, eventTime: ev.time || '', eventColor: ev.color || '#B58863' });
       }
-      changed = true;
-      dateChanged = true;
+      changed = true; dateChanged = true;
     });
     if (dateChanged) sortEventsForDate(dk);
   });
   return changed;
 }
 
-// Returns true if the given yr/mo/d is strictly before today (i.e. a past date)
 function isPastDate(yr, mo, d) {
   const now = new Date();
   const nowY = now.getFullYear(), nowM = now.getMonth(), nowD = now.getDate();
@@ -770,87 +746,46 @@ function init() {
   const todayPill = document.querySelector(`.day-pill[data-val="${todayDow}"]`);
   if (todayPill) todayPill.classList.add('selected');
   setupHomeChartResizeObserver();
-  // If the original Chart.js <script> tag already failed by this point, start
-  // recovery immediately rather than waiting for the 3-second polling window
-  // inside waitForHomeReadyAndRender to expire first.
-  if (window.__chartJsLoadFailed && typeof Chart === 'undefined') {
-    attemptChartJsRecovery();
-  }
+  if (window.__chartJsLoadFailed && typeof Chart === 'undefined') { attemptChartJsRecovery(); }
   sw('home');
-  renderHabits();
-  renderTagManagement();
-  renderTagSelects();
-  renderTodo();
-  renderCal();
-  renderNotes();
-  renderTimerPresets();
+  renderHabits(); renderTagManagement(); renderTagSelects(); renderTodo(); renderCal(); renderNotes(); renderTimerPresets();
 }
 
-// Bulletproof safety net: watches the habit chart's wrapper element directly via
-// ResizeObserver, which fires the instant that element transitions from zero to
-// real dimensions — regardless of WHY it was zero (ancestor display:none, CSS
-// animation, async auth timing, etc). This removes all guesswork about timing
-// and guarantees charts render the moment they're actually able to.
 function setupHomeChartResizeObserver() {
-  if (homeResizeObserver) return; // only set up once
+  if (homeResizeObserver) return;
   const wrapper = document.querySelector('#s-home .chart-wrapper');
   if (!wrapper || typeof ResizeObserver === 'undefined') return;
   homeResizeObserver = new ResizeObserver((entries) => {
-    if (homeChartsEverRendered) return; // first successful render handled it; let Chart.js's own responsive:true take over from here
+    if (homeChartsEverRendered) return;
     for (const entry of entries) {
       const w = entry.contentRect.width, h = entry.contentRect.height;
-      if (w > 0 && h > 0) {
-        renderHomeOverview();
-        homeChartsEverRendered = true;
-        homeResizeObserver.disconnect();
-        homeResizeObserver = null;
-        break;
-      }
+      if (w > 0 && h > 0) { renderHomeOverview(); homeChartsEverRendered = true; homeResizeObserver.disconnect(); homeResizeObserver = null; break; }
     }
   });
   homeResizeObserver.observe(wrapper);
 }
 
-// Final independent safety net, decoupled entirely from the Firebase auth timing
-// chain: window 'load' only fires once EVERY resource (including the tabler-icons
-// webfont, which loads async via its own stylesheet) has finished loading and the
-// browser has settled into its true final layout. Web fonts swapping in after
-// initial paint is a documented cause of post-paint layout shifts, which could
-// leave an earlier-constructed chart holding a stale canvas bitmap size.
 window.addEventListener('load', () => {
-  // Guard: only act if auth has actually resolved and the user is logged in.
-  // If page 'load' fires before Firebase auth resolves (e.g. slow connection),
-  // #app-screen is still display:none and acting here would just recreate the
-  // original bug by rendering into a still-hidden canvas.
   if (!currentUser) return;
   const homeSection = document.getElementById('s-home');
   if (homeSection && homeSection.classList.contains('visible')) {
     if (habitChartInst) habitChartInst.resize();
     if (taskChartInst) taskChartInst.resize();
     if (monthlyLineChartInst) monthlyLineChartInst.resize();
-    // If charts somehow never got created at all, this also catches that case.
     if (!habitChartInst) renderHomeOverview();
   }
 });
 
-let chartJsRecoveryStage = 0; // 0 = not started, 1 = tried jsdelivr retry, 2 = tried cdnjs fallback
+let chartJsRecoveryStage = 0; 
 
-// If Chart.js failed to load (CDN hiccup, ad-blocker/network filter blocking
-// that specific domain, slow/flaky connection, etc.), this tries to recover by
-// loading it from a fresh script tag. Retrying the exact same URL/CDN that just
-// failed has a real chance of failing again for the same underlying reason, so
-// the second attempt deliberately switches to a different provider entirely
-// (cdnjs.cloudflare.com instead of cdn.jsdelivr.net) for a genuinely independent
-// retry path. Capped at two attempts total so a truly offline browser doesn't
-// loop forever.
 function attemptChartJsRecovery() {
-  if (typeof Chart !== 'undefined') { renderHomeOverview(); return; } // it actually loaded, nothing to recover
-  if (chartJsRecoveryStage >= 2) return; // both fallbacks already tried this session
+  if (typeof Chart !== 'undefined') { renderHomeOverview(); return; }
+  if (chartJsRecoveryStage >= 2) return; 
 
   chartJsRecoveryStage += 1;
   const fallbackUrls = [
-    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js', // stage 1: retry original CDN once, in case it was a transient blip
-    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js' // stage 2: different domain entirely
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js'
   ];
   const url = fallbackUrls[chartJsRecoveryStage - 1];
   if (!url) return;
@@ -858,25 +793,15 @@ function attemptChartJsRecovery() {
   const script = document.createElement('script');
   script.src = url;
   script.onload = () => {
-    if (typeof Chart !== 'undefined') {
-      window.__chartJsLoadFailed = false;
-      renderHomeOverview();
-    } else {
-      attemptChartJsRecovery(); // this attempt's script loaded but somehow didn't define Chart — try next stage
-    }
+    if (typeof Chart !== 'undefined') { window.__chartJsLoadFailed = false; renderHomeOverview(); } 
+    else { attemptChartJsRecovery(); }
   };
-  script.onerror = () => {
-    attemptChartJsRecovery(); // this attempt failed outright — try next stage
-  };
+  script.onerror = () => { attemptChartJsRecovery(); };
   document.head.appendChild(script);
 }
 
-// Polls until Chart.js is loaded AND the habitChart canvas has real layout dimensions,
-// then renders. Uses getBoundingClientRect() (forces synchronous reflow, guaranteed-fresh
-// values) rather than offsetWidth/offsetHeight (can be cached in some browser engines).
-// Works alongside the ResizeObserver above as a belt-and-suspenders approach.
 function waitForHomeReadyAndRender(attemptsLeft) {
-  if (attemptsLeft === undefined) attemptsLeft = 60; // ~3s ceiling at 50ms intervals
+  if (attemptsLeft === undefined) attemptsLeft = 60;
   const canvas = document.getElementById('habitChart');
   let rect = { width: 0, height: 0 };
   if (canvas) rect = canvas.getBoundingClientRect();
@@ -888,19 +813,15 @@ function waitForHomeReadyAndRender(attemptsLeft) {
   } else if (attemptsLeft > 0) {
     setTimeout(() => waitForHomeReadyAndRender(attemptsLeft - 1), 50);
   } else if (typeof Chart === 'undefined') {
-    // After 3 seconds Chart.js still isn't defined at all — this is a genuine
-    // script-load failure, not just a layout timing issue. Trigger recovery
-    // instead of calling renderHomeOverview() blind, which would just throw.
     attemptChartJsRecovery();
   } else {
-    // Chart.js IS defined, dimensions just looked iffy — safe to render anyway
-    // so something shows rather than nothing.
     renderHomeOverview();
   }
 }
 
 function toggleSidebar() { document.getElementById('main-sidebar').classList.toggle('collapsed'); }
 
+// SCROLL FIX - Resets scrollbar upon switching tabs and locks Home Overview screen
 function sw(t) {
   ['home','habits','todo','timer','calendar','notes','chat','settings'].forEach(id => {
     const el = document.getElementById('s-'+id);
@@ -909,38 +830,33 @@ function sw(t) {
     if (nb) nb.classList.toggle('active', id===t);
   });
   if (window.innerWidth < 800) document.getElementById('main-sidebar').classList.add('collapsed');
-
-  if (t==='home') {
-    waitForHomeReadyAndRender();
+  
+  // ---> THE FIX <---
+  // Always scroll to the top so you aren't dumped at the bottom of a new tab.
+  const scrollCont = document.querySelector('.content-scroll');
+  if (scrollCont) {
+    scrollCont.scrollTop = 0;
+    // On desktop, completely disable scrolling for the 'home' tab to lock your UI
+    scrollCont.style.overflowY = (t === 'home' && window.innerWidth >= 800) ? 'hidden' : 'auto';
   }
+
+  if (t==='home') { waitForHomeReadyAndRender(); }
   if (t==='calendar') renderCal();
   if (t==='todo') { renderTagManagement(); renderTagSelects(); }
   if (t==='timer') renderTimerPresets();
 }
 
 function renderAll() {
-  renderHabits();
-  renderTagManagement();
-  renderTagSelects();
-  renderTodo();
-  renderCal();
-  renderNotes();
-  renderTimerPresets();
-  // Only refresh charts if the home section is actually visible right now;
-  // otherwise sw('home') will trigger the readiness-checked render when the user opens it.
+  renderHabits(); renderTagManagement(); renderTagSelects(); renderTodo(); renderCal(); renderNotes(); renderTimerPresets();
   const homeSection = document.getElementById('s-home');
-  if (homeSection && homeSection.classList.contains('visible')) {
-    waitForHomeReadyAndRender();
-  }
+  if (homeSection && homeSection.classList.contains('visible')) { waitForHomeReadyAndRender(); }
 }
 
-// ---- SETTINGS ----
 function updateDailyGoal(val) {
   const n = parseInt(val);
   if (n>0) { userSettings.dailyGoal=n; save(); renderAll(); }
 }
 
-// ---- TAG STUDIO ----
 function renderTagManagement() {
   const el = document.getElementById('todo-tags-list');
   if (!el) return;
@@ -976,7 +892,6 @@ function deleteCustomTag(id) {
 
 function getTagDetails(id) { return customTags.find(t=>t.id===id); }
 
-// ---- HOME / CHARTS ----
 function renderHomeOverview() {
   const done = todayDoneCount();
   const tk = todayKey();
@@ -986,22 +901,11 @@ function renderHomeOverview() {
   document.getElementById('home-task-stat').textContent  = pending;
   document.getElementById('home-note-stat').textContent  = notes.length;
 
-  // GUARD: Chart.js can occasionally fail to load in time (slow/flaky CDN
-  // response), and the earlier code here used to assume it was always ready,
-  // which threw a silent ReferenceError and aborted the rest of this function —
-  // leaving the stat numbers above filled in but every chart and the mini
-  // calendar below completely blank. That exact symptom (titles + empty boxes)
-  // is what was happening intermittently. Now we detect it explicitly and
-  // recover instead of crashing.
-  if (typeof Chart === 'undefined') {
-    attemptChartJsRecovery();
-    return;
-  }
+  if (typeof Chart === 'undefined') { attemptChartJsRecovery(); return; }
 
   Chart.defaults.color = '#A79E9C';
   Chart.defaults.font.family = "'Inter', sans-serif";
 
-  // 7-day bar
   const hCtx = document.getElementById('habitChart').getContext('2d');
   if (habitChartInst) habitChartInst.destroy();
   const now = new Date(), labels=[], percents=[];
@@ -1023,7 +927,6 @@ function renderHomeOverview() {
     }
   });
 
-  // Doughnut
   const tCtx = document.getElementById('taskChart').getContext('2d');
   if (taskChartInst) taskChartInst.destroy();
   const doneTasks=daily.filter(t=>t.done).length;
@@ -1035,7 +938,6 @@ function renderHomeOverview() {
     options:{ responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{display:false},tooltip:{enabled:daily.length>0}} }
   });
 
-  // Monthly line
   const lCtx = document.getElementById('monthlyLineChart').getContext('2d');
   if (monthlyLineChartInst) monthlyLineChartInst.destroy();
   const today=new Date(), yr=today.getFullYear(), mo=today.getMonth();
@@ -1060,13 +962,6 @@ function renderHomeOverview() {
     }
   });
 
-  // FIX: force multiple resize passes at staggered intervals after creation.
-  // A single requestAnimationFrame isn't always enough — web font loading
-  // (tabler-icons-webfont) and other async layout shifts can still be settling
-  // after the first paint frame, which can leave Chart.js holding a stale/zero
-  // canvas bitmap size from construction time. Rather than guess at one "correct"
-  // moment, we re-assert sizing at several points so at least one definitely
-  // lands after the browser has fully settled.
   const forceChartResize = () => {
     if (habitChartInst) habitChartInst.resize();
     if (taskChartInst) taskChartInst.resize();
@@ -1101,7 +996,6 @@ function renderHomeMiniCal() {
   document.getElementById('home-mini-cal').innerHTML=html;
 }
 
-// ---- HABITS ----
 function calcStreak(h) {
   const checks=h.checks||[]; let s=0; const today=new Date().getDay();
   for(let i=0;i<7;i++){ let di=(today-i+7)%7; if(checks[di]) s++; else break; }
@@ -1151,7 +1045,6 @@ function addHabit() {
 }
 function delHabit(i) { habits.splice(i,1); save(); renderHabits(); renderHomeOverview(); }
 
-// ---- TODO ----
 function generateTagHTML(tagId) {
   if(!tagId) return '';
   const t=getTagDetails(tagId);
@@ -1232,8 +1125,6 @@ function uncheckDaily(tk,idx){ dailyTodos[tk][idx].done=false; save(); renderTod
 function delDaily(tk,idx)    {
   const removed = dailyTodos[tk][idx];
   dailyTodos[tk].splice(idx,1);
-  // If this todo was created from a calendar event, remove that event too so
-  // the calendar doesn't keep showing a task that no longer exists on the to-do list.
   if (removed && removed.eventLinkId && calEvents[tk]) {
     calEvents[tk] = calEvents[tk].filter(ev => ev.eventLinkId !== removed.eventLinkId);
   }
@@ -1243,7 +1134,6 @@ function checkWeekly(idx)    { weeklyTodos[idx].done=true;  save(); renderWeekly
 function uncheckWeekly(idx)  { weeklyTodos[idx].done=false; save(); renderWeekly(); }
 function delWeekly(idx)      { weeklyTodos.splice(idx,1);   save(); renderWeekly(); }
 
-// ---- TIMER ----
 const BUILTIN_TIMER_DEFS = BUILTIN_TIMERS;
 
 function renderTimerPresets() {
@@ -1314,7 +1204,6 @@ function resetTimer() {
   document.getElementById('timer-start-btn').textContent='Start';
 }
 
-// ---- CALENDAR ----
 function calDK(yr,mo,d) { return `${yr}-${mo}-${d}`; }
 
 function renderCal() {
@@ -1329,7 +1218,6 @@ function renderCal() {
   for(let d=1;d<=dim;d++){
     const isT=d===todD&&mo===todM&&yr===todY;
     const isFuture=new Date(yr,mo,d)>now&&!isT;
-    // FIX: past = any date before today (not today, not future)
     const isPast=isPastDate(yr,mo,d);
     const dk=calDK(yr,mo,d);
     const hasEv=(calEvents[dk]&&calEvents[dk].length>0);
@@ -1339,14 +1227,12 @@ function renderCal() {
     let cls='cal-cell';
     if(isT) cls+=' today';
     if(isFuture) cls+=' faded';
-    // Only apply past class to past dates (not today, not future)
     else if(isPast) cls+=' past';
     if(!isFuture && dayDone>=GOAL) cls+=' green';
     else if(!isFuture && dayDone>=0&&dayDone<GOAL) cls+=' red';
     if(hasEv) cls+=' has-event';
     if(selectedCalDate===dk) cls+=' selected-day';
 
-    // Build a tiny task preview for this specific day, pulling from dailyTodos
     const dayTasks = dailyTodos[dk] || [];
     let taskPreviewHTML = '';
     if (dayTasks.length > 0) {
@@ -1365,9 +1251,6 @@ function renderCal() {
     let eventBarHTML = '';
     if (hasEv) {
       const dayEvents = calEvents[dk];
-      // One colored segment per event (not just the first), so every event's
-      // chosen color actually shows up on the calendar grid. Capped at 5 segments
-      // to keep the row legible on days with many events.
       const maxSegments = 5;
       const segs = dayEvents.slice(0, maxSegments).map(ev => {
         const c = ev.color || '#B58863';
@@ -1377,7 +1260,6 @@ function renderCal() {
       eventBarHTML = `<span class="cal-event-bar-row" title="${titleText.replace(/"/g,'&quot;')}">${segs}</span>`;
     }
 
-    // Past dates: show dimmed with no click; today and future: clickable
     if(isPast) {
       html+=`<div class="${cls}" title="Cannot add events to past dates">${dayNumHTML}${taskPreviewHTML}${eventBarHTML}</div>`;
     } else {
@@ -1391,7 +1273,6 @@ function renderCal() {
 function calNav(dir) { calOffset+=dir; selectedCalDate=null; renderCal(); clearEventPanel(); }
 
 function selectCalDate(yr,mo,d) {
-  // FIX: double-check that the clicked date is not in the past
   if(isPastDate(yr,mo,d)) return;
   selectedCalDate=calDK(yr,mo,d);
   renderCal();
@@ -1451,7 +1332,6 @@ function renderEventPanel() {
 
 function addEvent() {
   if(!selectedCalDate) return;
-  // FIX: guard against adding events to past dates
   const parts=selectedCalDate.split('-');
   if(isPastDate(parseInt(parts[0]),parseInt(parts[1]),parseInt(parts[2]))) return;
   const text=document.getElementById('new-event-text').value.trim();
@@ -1463,23 +1343,13 @@ function addEvent() {
   const color=document.getElementById('event-color').value;
   if(!calEvents[selectedCalDate]) calEvents[selectedCalDate]=[];
 
-  // Link this event to a daily todo on the same date, so it shows up on the
-  // to-do list for whichever day it's assigned to (today's tasks if added for
-  // today, or automatically once that future date's tab is viewed/arrives,
-  // since dailyTodos is already rendered per-date by key).
   const eventLinkId = genId();
   calEvents[selectedCalDate].push({text,time,color,eventLinkId});
   sortEventsForDate(selectedCalDate);
 
   if(!dailyTodos[selectedCalDate]) dailyTodos[selectedCalDate]=[];
   dailyTodos[selectedCalDate].push({
-    id: genId(),
-    text,
-    tag: '',
-    done: false,
-    eventLinkId,
-    eventTime: time,
-    eventColor: color
+    id: genId(), text, tag: '', done: false, eventLinkId, eventTime: time, eventColor: color
   });
 
   document.getElementById('new-event-text').value='';
@@ -1491,15 +1361,12 @@ function delEvent(i) {
   if(!selectedCalDate) return;
   const removed = calEvents[selectedCalDate][i];
   calEvents[selectedCalDate].splice(i,1);
-  // Remove the linked todo too, so deleting an event doesn't leave an orphaned
-  // task behind on that day's to-do list.
   if (removed && removed.eventLinkId && dailyTodos[selectedCalDate]) {
     dailyTodos[selectedCalDate] = dailyTodos[selectedCalDate].filter(t => t.eventLinkId !== removed.eventLinkId);
   }
   save(); renderCal(); renderEventPanel(); renderTodo(); renderHomeOverview();
 }
 
-// ---- NOTES ----
 function renderFolders() {
   document.getElementById('folder-list').innerHTML=folders.map(f=>`
     <div class="folder-item${f===activeFolder?' active':''}" onclick="setFolder('${f}')">
@@ -1592,15 +1459,16 @@ async function uploadMedia(type) {
   input.click();
 }
 
-// ---- CHAT ----
 function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); } }
+
 function buildContext() {
   const dow=new Date().getDay();
   const done=habits.filter(h=>(h.checks||[])[dow]).map(h=>h.name);
   const pending=(dailyTodos[todayKey()]||[]).filter(t=>!t.done).map(t=>t.text);
   return `Dashboard context — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}. Habits done today: ${done.length?done.join(', '):'none'}. Daily goal: ${userSettings.dailyGoal}. Pending tasks: ${pending.length?pending.join(', '):'none'}. Total habits: ${habits.length}. Notes: ${notes.length}.`;
 }
+
 function appendMsg(role,text) {
   const msgs=document.getElementById('chat-messages');
   const w=msgs.querySelector('.chat-welcome'); if(w) w.remove();
@@ -1608,30 +1476,77 @@ function appendMsg(role,text) {
   div.innerHTML=`<div class="msg-avatar">${role==='user'?'<i class="ti ti-user"></i>':'<i class="ti ti-sparkles"></i>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
   msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
 }
+
 function showTyping() {
   const msgs=document.getElementById('chat-messages');
   const div=document.createElement('div'); div.className='msg ai'; div.id='typing-indicator';
   div.innerHTML=`<div class="msg-avatar"><i class="ti ti-sparkles"></i></div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
   msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
 }
+
 function removeTyping() { const t=document.getElementById('typing-indicator'); if(t) t.remove(); }
+
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { alert("Sorry, your browser doesn't support voice recognition."); return; }
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  const micIcon = document.querySelector('#mic-btn i');
+  micIcon.style.color = '#ef4444'; 
+  recognition.onresult = function(event) {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById('chat-input').value = transcript;
+    micIcon.style.color = 'inherit'; 
+    sendMsg(); 
+  };
+  recognition.onerror = function() { micIcon.style.color = 'inherit'; };
+  recognition.onend = function() { micIcon.style.color = 'inherit'; };
+  recognition.start();
+}
+
+function speakOutLoud(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel(); 
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.pitch = 1;
+  utterance.rate = 1; 
+  window.speechSynthesis.speak(utterance);
+}
+
 async function sendMsg() {
   const inp=document.getElementById('chat-input'), text=inp.value.trim();
   if(!text) return;
   inp.value=''; inp.style.height='auto';
   document.getElementById('send-btn').disabled=true;
-  appendMsg('user',text); chatHistory.push({role:'user',content:text}); showTyping();
+  
+  appendMsg('user',text); 
+  chatHistory.push({role:'user',content:text}); 
+  showTyping();
+  
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:buildContext()+'\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical.', messages:chatHistory }) });
-    const data=await res.json(); removeTyping();
-    const reply=data.content&&data.content[0]?data.content[0].text:'Sorry, something went wrong.';
-    appendMsg('ai',reply); chatHistory.push({role:'assistant',content:reply});
-  } catch(e){ removeTyping(); appendMsg('ai','Something went wrong — please try again.'); }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{ 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ 
+        model:'claude-sonnet-4-6', 
+        max_tokens:1000, 
+        system:buildContext()+'\n\nYou are Claude, a helpful assistant embedded in the user\'s personal dashboard. Be concise, warm, and practical.', 
+        messages:chatHistory 
+      }) 
+    });
+    const data=await res.json(); 
+    removeTyping();
+    const reply = data.content && data.content[0] ? data.content[0].text : 'Sorry, something went wrong.';
+    appendMsg('ai',reply); 
+    chatHistory.push({role:'assistant',content:reply});
+    speakOutLoud(reply);
+  } catch(e){ 
+    removeTyping(); 
+    appendMsg('ai','Something went wrong — please try again.'); 
+  }
   document.getElementById('send-btn').disabled=false;
 }
 
-// ---- EXPOSE GLOBALS (moved inline to fix module scope issue) ----
 window['_m_login']=login; window.login=login; window['_m_signup']=signup; window.signup=signup; window['_m_logout']=logout; window.logout=logout;
 window['_m_sw']=sw; window.sw=sw; window['_m_toggleSidebar']=toggleSidebar; window.toggleSidebar=toggleSidebar;
 window['_m_addHabit']=addHabit; window.addHabit=addHabit; window['_m_delHabit']=delHabit; window.delHabit=delHabit; window['_m_toggleDay']=toggleDay; window.toggleDay=toggleDay;
@@ -1647,7 +1562,7 @@ window['_m_addCustomTag']=addCustomTag; window.addCustomTag=addCustomTag; window
 window['_m_applyTimerPreset']=applyTimerPreset; window.applyTimerPreset=applyTimerPreset; window['_m_saveCustomTimer']=saveCustomTimer; window.saveCustomTimer=saveCustomTimer;
 window['_m_deleteCustomTimer']=deleteCustomTimer; window.deleteCustomTimer=deleteCustomTimer; window['_m_toggleTimer']=toggleTimer; window.toggleTimer=toggleTimer;
 window['_m_resetTimer']=resetTimer; window.resetTimer=resetTimer; window['_m_autoResize']=autoResize; window.autoResize=autoResize; window['_m_handleKey']=handleKey; window.handleKey=handleKey;
-window['_m_sendMsg']=sendMsg; window.sendMsg=sendMsg;
+window['_m_sendMsg']=sendMsg; window.sendMsg=sendMsg; window['_m_startListening']=startListening; window.startListening=startListening;
 </script>
 </body>
 </html>
